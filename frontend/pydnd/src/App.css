@@ -1,5 +1,25 @@
-.App {
-  text-align: center;
+.App:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.column {
+  float: left;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.left {
+  width: 35%;
+  background-color: #282c34;
+  max-height: 100vh;
+}
+
+.right {
+  width: 65%;
+  background-color: #61dafb;
+  max-height: 100vh;
 }
 
 .App-logo {
