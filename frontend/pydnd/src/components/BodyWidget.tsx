@@ -62,7 +62,9 @@ export class BodyWidget extends React.Component<BodyWidgetProps> {
 							var node: DefaultNodeModel;
 							if (data.type === 'in') {
 								node = new DefaultNodeModel('Output', 'rgb(192,255,0)');
-								node.addInPort('In');
+								node.addInPort('In-1');
+                                node.addInPort('In-2');
+
 							} else {
 								node = new DefaultNodeModel('Parameter', 'rgb(0,192,255)');
 								node.addOutPort('Out');

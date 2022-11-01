@@ -2,6 +2,8 @@ import * as SRD from '@projectstorm/react-diagrams';
 
 /**
  * @author Dylan Vorster
+ * Rivised by 
+ * @author Zihan Xu
  */
 export class Application {
 	protected activeModel: SRD.DiagramModel;
