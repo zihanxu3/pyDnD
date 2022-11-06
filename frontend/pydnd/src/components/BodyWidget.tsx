@@ -48,12 +48,12 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 	constructor(props) {
 		super(props);
 		this.state = {
-			clicked: false,
+			nodeSelected: '',
 		}
 	}
 	render() {
 		const {
-			clicked,
+			nodeSelected,
 		} = this.state;
 		return (
 			<S.Body>
@@ -76,8 +76,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 								node.addInPort('In');
 							} else {
 								node = new ParameterNodeModel({value: 'parameter', onDoubleClick: () => { 
-									this.setState({ clicked: true });
-									console.log(this.state.clicked);
+									this.setState({ nodeSelected: 'variable' });
 									this.forceUpdate();
 								} });;
 								// node.addOutPort('Out');
@@ -98,12 +97,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 							<CanvasWidget engine={this.props.app.getDiagramEngine()} />
 						</DemoCanvasWidget>
 					</S.Layer>
-						<SidebarWidget display={clicked} onClick={() => {
-							this.setState({
-								clicked: !this.state.clicked,
-							})
-						}}>
-						</SidebarWidget>
+					<SidebarWidget nodeSelected={nodeSelected} onClick={() => {this.setState({nodeSelected: ''})}}/>
 				</S.Content>
 			</S.Body>
 		);
