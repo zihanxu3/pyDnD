@@ -1,12 +1,14 @@
-import { NodeModel, DefaultPortModel, PortModelAlignment } from '@projectstorm/react-diagrams';
-import { BaseModelOptions } from '@projectstorm/react-canvas-core';
+import { NodeModel, DefaultPortModel, PortModelAlignment, DefaultNodeModel } from '@projectstorm/react-diagrams';
+import { DefaultNodeModelOptions } from '@projectstorm/react-diagrams-defaults';
 
-export interface ParameterNodeModelOptions extends BaseModelOptions {
-	value?: string;
+export interface ParameterNodeModelOptions extends DefaultNodeModelOptions {
+	name?: string;
+	color?: string;
     onDoubleClick?: () => void;
 }
 
-export class ParameterNodeModel extends NodeModel {
+export class ParameterNodeModel extends DefaultNodeModel {
+	type: string;
 	value: string;
     onDoubleClick: () => void;
 
@@ -15,32 +17,35 @@ export class ParameterNodeModel extends NodeModel {
 			...options,
 			type: 'ts-custom-node'
 		});
-		this.value = options.value || 'red';
         this.onDoubleClick = options.onDoubleClick;
-
-		// setup an out port
-		this.addPort(
-			new DefaultPortModel({
-				in: false,
-				name: 'out',
-                alignment: PortModelAlignment.RIGHT, 
-			})
-		);
+		this.type = '';
+		this.value = '';
 	}
 
-    setValue(input?: string): void {
-        this.value = input;
+	getNodeType(): string {
+		return 'variable';
+	}
+
+	getValueAndType() {
+		return [this.value, this.type];
+	}
+
+    setValueAndType(value: string, type: string): void {
+        this.value = value;
+		this.type = type;
     }
 
 	serialize() {
 		return {
 			...super.serialize(),
-			value: this.value
+			value: this.value,
+			type: this.type
 		};
 	}
 
 	deserialize(event): void {
 		super.deserialize(event);
 		this.value = event.data.value;
+		this.type = event.data.type;
 	}
 }

@@ -8,6 +8,9 @@ import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -17,8 +20,9 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
 });
 
 export interface SidebarWidgetProps {
-	nodeSelected: string;
-	onClick?: () => void;
+	nodeSelected: any;
+	onClose: () => void;
+	onSave: () => void;
 }
 
 namespace S {
@@ -33,15 +37,18 @@ namespace S {
 		text-align: center;
 	`;
 }
+const types = ['number', 'list', 'dict', 'set'];
 
 export class SidebarWidget extends React.Component<any, any> {
 	constructor(props) {
 		super(props);
 		this.state = {
 			variableType: 0,
-			textBoxValue: "",
+			textBoxValue: '',
 			open: false,
 		}
+		console.log("constructed");
+
 	}
 	render() {
 		const {
@@ -49,9 +56,8 @@ export class SidebarWidget extends React.Component<any, any> {
 			textBoxValue,
 			open,
 		} = this.state;
-		const types = ['number', 'list', 'dict', 'set']
 		let content;
-		if (this.props.nodeSelected === 'variable') {
+		if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeType() === 'variable') {
 			content = 
 					<div>
 						<div>
@@ -70,7 +76,7 @@ export class SidebarWidget extends React.Component<any, any> {
 									}
 								>
 									{types.map((val, idx) => {
-										return <MenuItem value={idx}>{val}</MenuItem>;
+										return <MenuItem key={idx} value={idx}>{val}</MenuItem>;
 									})}
 								</Select>
 							</FormControl>
@@ -94,6 +100,8 @@ export class SidebarWidget extends React.Component<any, any> {
 								this.setState({
 									open: true,
 								});
+								this.props.nodeSelected.setValueAndType(textBoxValue, variableType);
+								// this.props.nodeSelected.addInPort('In2');
 							}}>Save</Button>
 						</div>
 						<Snackbar 
@@ -113,8 +121,12 @@ export class SidebarWidget extends React.Component<any, any> {
 		} else {
 			content = <p>hello</p>;
 		}
-		return <S.RightTray style={{ display: this.props.nodeSelected !== '' ? 'block' : 'none' }}>
-			<button onClick={this.props.onClick}> Close </button>
+		return <S.RightTray style={{ display: this.props.nodeSelected !== null ? 'block' : 'none' }}>
+			<IconButton aria-label="delete" onClick={() => {
+				this.props.onClose();
+			}}>
+				<CloseIcon/>
+			</IconButton> 
 			<S.TrayStack>
 				<h3>Configurations</h3>
 				{content}

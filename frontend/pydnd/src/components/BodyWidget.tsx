@@ -44,13 +44,37 @@ namespace S {
 	`;
 }
 
+
 export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 	constructor(props) {
 		super(props);
 		this.state = {
-			nodeSelected: '',
+			nodeSelected: null,
 		}
+		//3-A) create a default node
+		var node1 = new ParameterNodeModel({onDoubleClick: () => { 
+			this.setState({ nodeSelected: node1 });
+			this.forceUpdate();
+		}, name: 'Parameter', color: 'rgb(0,192,255)'});
+		let port = node1.addOutPort('Out');
+		node1.setPosition(100, 100);
+
+		//3-B) create another default node
+		var node2 = new ParameterNodeModel({onDoubleClick: () => { 
+			this.setState({ nodeSelected: node2 });
+			this.forceUpdate();
+		}, name: 'Output', color: 'rgb(192,255,0)'});
+		let port2 = node2.addInPort('In');
+		node2.setPosition(400, 100);
+
+
+		// link the ports
+		let link1 = port.link(port2);
+
+		this.props.app.getDiagramEngine().getModel().addAll(node1, node2, link1);
+		console.log(this.props.app.getDiagramEngine().getModel());
 	}
+
 	render() {
 		const {
 			nodeSelected,
@@ -75,11 +99,15 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 								node = new DefaultNodeModel('Output', 'rgb(192,255,0)');
 								node.addInPort('In');
 							} else {
-								node = new ParameterNodeModel({value: 'parameter', onDoubleClick: () => { 
-									this.setState({ nodeSelected: 'variable' });
-									this.forceUpdate();
-								} });;
-								// node.addOutPort('Out');
+								node = new ParameterNodeModel({
+									name: 'Parameter', 
+									color: 'rgb(200,200,0)',
+									onDoubleClick: () => { 
+										this.setState({ nodeSelected: node });
+										this.forceUpdate();
+									} 
+								});
+								node.addOutPort('Out');
 							}
 							var point = this.props.app.getDiagramEngine().getRelativeMousePoint(event);
 							node.setPosition(point);
@@ -97,7 +125,9 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 							<CanvasWidget engine={this.props.app.getDiagramEngine()} />
 						</DemoCanvasWidget>
 					</S.Layer>
-					<SidebarWidget nodeSelected={nodeSelected} onClick={() => {this.setState({nodeSelected: ''})}}/>
+					<SidebarWidget 
+					nodeSelected={nodeSelected} 
+					onClose={() => {this.setState({nodeSelected: null})}}/>
 				</S.Content>
 			</S.Body>
 		);
