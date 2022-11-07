@@ -93,7 +93,7 @@ export class SidebarWidget extends React.Component<any, any> {
 							<Button variant="outlined" onClick={() => {
 								this.setState({
 									open: true,
-								})
+								});
 							}}>Save</Button>
 						</div>
 						<Snackbar 
