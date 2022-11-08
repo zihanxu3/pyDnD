@@ -7,6 +7,8 @@ import { DefaultNodeModel } from '@projectstorm/react-diagrams';
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
 import { DemoCanvasWidget } from './CanvasWidget';
 import styled from '@emotion/styled';
+import { SidebarWidget } from './SidebarWidget';
+import { ParameterNodeModel } from './customNodes/ParameterNodeModel';
 
 export interface BodyWidgetProps {
 	app: Application;
@@ -42,8 +44,41 @@ namespace S {
 	`;
 }
 
-export class BodyWidget extends React.Component<BodyWidgetProps> {
+
+export class BodyWidget extends React.Component<BodyWidgetProps, any> {
+	constructor(props) {
+		super(props);
+		this.state = {
+			nodeSelected: null,
+		}
+		//3-A) create a default node
+		var node1 = new ParameterNodeModel({onDoubleClick: () => { 
+			this.setState({ nodeSelected: node1 });
+			this.forceUpdate();
+		}, name: 'Parameter', color: 'rgb(0,192,255)'});
+		let port = node1.addOutPort('Out');
+		node1.setPosition(100, 100);
+
+		//3-B) create another default node
+		var node2 = new ParameterNodeModel({onDoubleClick: () => { 
+			this.setState({ nodeSelected: node2 });
+			this.forceUpdate();
+		}, name: 'Output', color: 'rgb(192,255,0)'});
+		let port2 = node2.addInPort('In');
+		node2.setPosition(400, 100);
+
+
+		// link the ports
+		let link1 = port.link(port2);
+
+		this.props.app.getDiagramEngine().getModel().addAll(node1, node2, link1);
+		console.log(this.props.app.getDiagramEngine().getModel());
+	}
+
 	render() {
+		const {
+			nodeSelected,
+		} = this.state;
 		return (
 			<S.Body>
 				<S.Header>
@@ -59,14 +94,19 @@ export class BodyWidget extends React.Component<BodyWidgetProps> {
 							var data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
 							var nodesCount = _.keys(this.props.app.getDiagramEngine().getModel().getNodes()).length;
 
-							var node: DefaultNodeModel;
+							var node;
 							if (data.type === 'in') {
 								node = new DefaultNodeModel('Output', 'rgb(192,255,0)');
-								node.addInPort('In-1');
-                                node.addInPort('In-2');
-
+								node.addInPort('In');
 							} else {
-								node = new DefaultNodeModel('Parameter', 'rgb(0,192,255)');
+								node = new ParameterNodeModel({
+									name: 'Parameter', 
+									color: 'rgb(200,200,0)',
+									onDoubleClick: () => { 
+										this.setState({ nodeSelected: node });
+										this.forceUpdate();
+									} 
+								});
 								node.addOutPort('Out');
 							}
 							var point = this.props.app.getDiagramEngine().getRelativeMousePoint(event);
@@ -85,6 +125,9 @@ export class BodyWidget extends React.Component<BodyWidgetProps> {
 							<CanvasWidget engine={this.props.app.getDiagramEngine()} />
 						</DemoCanvasWidget>
 					</S.Layer>
+					<SidebarWidget 
+					nodeSelected={nodeSelected} 
+					onClose={() => {this.setState({nodeSelected: null})}}/>
 				</S.Content>
 			</S.Body>
 		);

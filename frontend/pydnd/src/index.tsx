@@ -11,9 +11,7 @@ const root = ReactDOM.createRoot(
 
 var app = new Application();
 root.render(
-  <React.StrictMode>
-    <BodyWidget app={app} />
-  </React.StrictMode>
+  <BodyWidget app={app} />
 );
 
 // If you want to start measuring performance in your app, pass a function
