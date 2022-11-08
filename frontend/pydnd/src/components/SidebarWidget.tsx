@@ -13,10 +13,10 @@ import CloseIcon from '@mui/icons-material/Close';
 
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
-  props,
-  ref,
+	props,
+	ref,
 ) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+	return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
 export interface SidebarWidgetProps {
@@ -45,6 +45,9 @@ export class SidebarWidget extends React.Component<any, any> {
 		this.state = {
 			variableType: 0,
 			textBoxValue: '',
+			functionInputs: '',
+			functionOutputs: '',
+			functionBody: '',
 			open: false,
 		}
 		console.log("constructed");
@@ -54,79 +57,152 @@ export class SidebarWidget extends React.Component<any, any> {
 		const {
 			variableType,
 			textBoxValue,
+			functionInputs,
+			functionOutputs,
+			functionBody,
 			open,
 		} = this.state;
 		let content;
-		if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeType() === 'variable') {
-			content = 
+		if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'variable') {
+			content =
+				<div>
 					<div>
-						<div>
-							<FormControl>
-								<InputLabel>Type</InputLabel>
-								<Select
-									value={variableType}
-									label="Type"
-									onChange={
-										(event: SelectChangeEvent) => {
-											console.log(event.target.value);
-											this.setState({
-												variableType: event.target.value
-											});
-										}
+						<FormControl>
+							<InputLabel>Type</InputLabel>
+							<Select
+								value={variableType}
+								label="Type"
+								onChange={
+									(event: SelectChangeEvent) => {
+										console.log(event.target.value);
+										this.setState({
+											variableType: event.target.value
+										});
 									}
-								>
-									{types.map((val, idx) => {
-										return <MenuItem key={idx} value={idx}>{val}</MenuItem>;
-									})}
-								</Select>
-							</FormControl>
-						</div>
-						<div style={{marginTop: 20}}>
-							<TextField
-								label="Value"
-								multiline
-								rows={4}
-								value={textBoxValue}
-								onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-									this.setState({
-										textBoxValue: event.target.value,
-									});
-								}}
-								placeholder={`Put in your ${types[variableType]} here.`}
-							/>
-						</div>
-						<div style={{marginTop: 20}}>
-							<Button variant="outlined" onClick={() => {
-								this.setState({
-									open: true,
-								});
-								this.props.nodeSelected.setValueAndType(textBoxValue, variableType);
-								// this.props.nodeSelected.addInPort('In2');
-							}}>Save</Button>
-						</div>
-						<Snackbar 
-							open={open} 
-							autoHideDuration={2000} 
-							onClose={() => { this.setState({open: false}) }}
-						>
-							<Alert 
-								onClose={() => { this.setState({open: false}) }} 
-								severity="success" 
-								sx={{ width: '100%' }}
+								}
 							>
-								Saved Successfully!
-							</Alert>
-						</Snackbar>
-					</div>;
-		} else {
-			content = <p>hello</p>;
+								{types.map((val, idx) => {
+									return <MenuItem key={idx} value={idx}>{val}</MenuItem>;
+								})}
+							</Select>
+						</FormControl>
+					</div>
+					<div style={{ marginTop: 20 }}>
+						<TextField
+							label="Value"
+							multiline
+							rows={4}
+							value={textBoxValue}
+							onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+								this.setState({
+									textBoxValue: event.target.value,
+								});
+							}}
+							placeholder={`Put in your ${types[variableType]} here.`}
+						/>
+					</div>
+					<div style={{ marginTop: 20 }}>
+						<Button variant="outlined" onClick={() => {
+							this.setState({
+								open: true,
+							});
+							this.props.nodeSelected.setValueAndType(textBoxValue, types[variableType]);
+							// this.props.nodeSelected.addInPort('In2');
+						}}>Save</Button>
+					</div>
+					<Snackbar
+						open={open}
+						autoHideDuration={2000}
+						onClose={() => { this.setState({ open: false }) }}
+					>
+						<Alert
+							onClose={() => { this.setState({ open: false }) }}
+							severity="success"
+							sx={{ width: '100%' }}
+						>
+							Saved Successfully!
+						</Alert>
+					</Snackbar>
+				</div>;
+		} else if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'function') {
+			content =
+				<div>
+					<div>
+						<TextField
+							label="Function Input Types"
+							multiline
+							rows={3}
+							value={functionInputs}
+							onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+								this.setState({
+									functionInputs: event.target.value,
+								});
+							}}
+							placeholder='Put in your function input types here, in order, separated by commas. E.g. number,number,list. If void, put nothing.'
+						/>
+					</div>
+					<div style={{ marginTop: 20 }}>
+						<TextField
+							label="Function Output Types"
+							multiline
+							rows={3}
+							value={functionOutputs}
+							onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+								this.setState({
+									functionOutputs: event.target.value,
+								});
+							}}
+							placeholder='Put in your function output types here, in order, separated by commas. E.g. number,number,list. If void, put nothing.'
+						/>
+					</div>
+					<div style={{ marginTop: 20 }}>
+						<TextField
+							label="Function Body"
+							multiline
+							rows={7}
+							value={functionBody}
+							onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+								this.setState({
+									functionBody: event.target.value,
+								});
+							}}
+							placeholder='Put in your function body here.'
+						/>
+					</div>
+					<div style={{ marginTop: 20 }}>
+						<Button variant="outlined" onClick={() => {
+							this.setState({
+								open: true,
+							});
+							if (this.props.nodeSelected.getFuntionInputs() !== functionInputs) { 
+								this.props.nodeSelected.setFunctionParams(functionInputs, functionOutputs, functionBody);
+								this.props.nodeSelected.addAllInAndOuts();
+							}
+						}}>Save</Button>
+					</div>
+					<Snackbar
+						open={open}
+						autoHideDuration={2000}
+						onClose={() => { this.setState({ open: false }) }}
+					>
+						<Alert
+							onClose={() => { this.setState({ open: false }) }}
+							severity="success"
+							sx={{ width: '100%' }}
+						>
+							Saved Successfully!
+						</Alert>
+					</Snackbar>
+				</div>
+		} else if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'output') {
+			<p>eeeee</p>;
 		}
 		return <S.RightTray style={{ display: this.props.nodeSelected !== null ? 'block' : 'none' }}>
 			<IconButton aria-label="delete" onClick={() => {
 				this.props.onClose();
 			}}>
-				<CloseIcon/>
-			</IconButton> 
+				<CloseIcon />
+			</IconButton>
 			<S.TrayStack>
 				<h3>Configurations</h3>
 				{content}

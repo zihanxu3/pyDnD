@@ -52,7 +52,9 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			nodeSelected: null,
 		}
 		//3-A) create a default node
-		var node1 = new ParameterNodeModel({onDoubleClick: () => { 
+		var node1 = new ParameterNodeModel({
+			mode: 'variable',
+			onDoubleClick: () => { 
 			this.setState({ nodeSelected: node1 });
 			this.forceUpdate();
 		}, name: 'Parameter', color: 'rgb(0,192,255)'});
@@ -60,7 +62,9 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 		node1.setPosition(100, 100);
 
 		//3-B) create another default node
-		var node2 = new ParameterNodeModel({onDoubleClick: () => { 
+		var node2 = new ParameterNodeModel({
+			mode: 'variable',
+			onDoubleClick: () => { 
 			this.setState({ nodeSelected: node2 });
 			this.forceUpdate();
 		}, name: 'Output', color: 'rgb(192,255,0)'});
@@ -72,10 +76,10 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 		let link1 = port.link(port2);
 
 		this.props.app.getDiagramEngine().getModel().addAll(node1, node2, link1);
-		console.log(this.props.app.getDiagramEngine().getModel());
 	}
 
 	render() {
+		console.log(this.props.app.getDiagramEngine().getModel());
 		const {
 			nodeSelected,
 		} = this.state;
@@ -86,8 +90,9 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 				</S.Header>
 				<S.Content>
 					<TrayWidget>
-                        <TrayItemWidget model={{ type: 'out' }} name="Parameter" color="rgb(0,192,255)" />
-						<TrayItemWidget model={{ type: 'in' }} name="Output" color="rgb(192,255,0)" />
+                        <TrayItemWidget model={{ type: 'param' }} name="Parameter" color="rgb(0,192,255)" />
+						<TrayItemWidget model={{ type: 'output' }} name="Output" color="rgb(192,255,0)" />
+						<TrayItemWidget model={{ type: 'function' }} name="Function" color="rgb(192,0,255)" />
 					</TrayWidget>
 					<S.Layer
 						onDrop={(event) => {
@@ -95,19 +100,38 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 							var nodesCount = _.keys(this.props.app.getDiagramEngine().getModel().getNodes()).length;
 
 							var node;
-							if (data.type === 'in') {
-								node = new DefaultNodeModel('Output', 'rgb(192,255,0)');
-								node.addInPort('In');
-							} else {
+							if (data.type === 'output') {
 								node = new ParameterNodeModel({
+									mode: 'output',
+									name: 'Output', 
+									color: 'rgb(192,255,0)',
+									onDoubleClick: () => { 
+										this.setState({ nodeSelected: node });
+										this.forceUpdate();
+									} 
+								});
+								node.addInPort('In');
+							} else if (data.type === 'param') {
+								node = new ParameterNodeModel({
+									mode: 'variable',
 									name: 'Parameter', 
-									color: 'rgb(200,200,0)',
+									color: 'rgb(0,192,255)',
 									onDoubleClick: () => { 
 										this.setState({ nodeSelected: node });
 										this.forceUpdate();
 									} 
 								});
 								node.addOutPort('Out');
+							} else if (data.type === 'function') {
+								node = new ParameterNodeModel({
+									mode: 'function',
+									name: 'Function', 
+									color: 'rgb(192,0,255)',
+									onDoubleClick: () => { 
+										this.setState({ nodeSelected: node });
+										this.forceUpdate();
+									} 
+								});
 							}
 							var point = this.props.app.getDiagramEngine().getRelativeMousePoint(event);
 							node.setPosition(point);
@@ -126,8 +150,8 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 						</DemoCanvasWidget>
 					</S.Layer>
 					<SidebarWidget 
-					nodeSelected={nodeSelected} 
-					onClose={() => {this.setState({nodeSelected: null})}}/>
+						nodeSelected={nodeSelected} 
+						onClose={() => {this.setState({nodeSelected: null})}}/>
 				</S.Content>
 			</S.Body>
 		);
