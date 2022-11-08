@@ -7,6 +7,7 @@ import { DefaultNodeModel } from '@projectstorm/react-diagrams';
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
 import { DemoCanvasWidget } from './CanvasWidget';
 import styled from '@emotion/styled';
+import Button from '@mui/material/Button';
 import { SidebarWidget } from './SidebarWidget';
 import { ParameterNodeModel } from './customNodes/ParameterNodeModel';
 
@@ -79,7 +80,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 	}
 
 	render() {
-		console.log(this.props.app.getDiagramEngine().getModel());
+		console.log(this.props.app.getDiagramEngine().getModel().serialize());
 		const {
 			nodeSelected,
 		} = this.state;
@@ -87,6 +88,31 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			<S.Body>
 				<S.Header>
 					<div className="title">CS 5412 PyDnD Project</div>
+					<div style={{marginLeft: 'auto'}}>
+						<Button variant="outlined" onClick={
+								async () => {
+									// https://pydnd-azure-backend-xyz.azurewebsites.net/compile
+									const rawResponse = await fetch('/compile', {
+										method: 'POST',
+										headers: {
+											'Accept': 'application/json',
+											'Content-Type': 'application/json'
+										},
+										// mode: 'cors',
+										body: JSON.stringify(this.props.app.getDiagramEngine().getModel().serialize())
+									});
+									let jsonResponse;
+									try {
+										jsonResponse = await rawResponse.json();
+									} catch (e) {
+										console.log(e)
+									}
+									console.log(jsonResponse);
+								}
+							}>
+							Run
+						</Button>
+					</div>
 				</S.Header>
 				<S.Content>
 					<TrayWidget>
@@ -149,6 +175,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 							<CanvasWidget engine={this.props.app.getDiagramEngine()} />
 						</DemoCanvasWidget>
 					</S.Layer>
+					
 					<SidebarWidget 
 						nodeSelected={nodeSelected} 
 						onClose={() => {this.setState({nodeSelected: null})}}/>
