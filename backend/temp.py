@@ -1,3 +1,3 @@
 # Write your function below
-def func(a, b, c):
-    return [a, b, c]
+def li(a, b):
+    return [a + 5] + b, a * [b]

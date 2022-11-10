@@ -61,7 +61,8 @@ class Deserializer:
 
     def linkNodes(self):
         self.parseAllLinks()
-        self.parseAllNodes()    
+        self.parseAllNodes() 
+        masterOutput = []   
         nodes = [self.entry]
         def appendOutPortNodes(node): 
             for v in node['ports']:
@@ -80,15 +81,15 @@ class Deserializer:
                 if v['label'][0] == 'I':
                     # Input is array
                     inputVals.append(
-                        ast.literal_eval(
-                            self.inputDict[self.linkDict[v['links'][0]]['source']]['value']
-                        )
+                        ast.literal_eval(self.inputDict[self.linkDict[v['links'][0]]['source']]['value'])
                     )
                 elif v['label'][0] == 'O':
                     # Output is array of array
                     outputLinks.append(v['links'])
-            executeFunction(functionBody=funtionBody, functionArgs=inputVals)
-
+            outputs, prints = executeFunction(functionBody=funtionBody, functionArgs=inputVals)
+            # Ignore linking function for now and return directly 
+            masterOutput.append(prints)
+            masterOutput.append(outputs)
 
         
         while nodes:
@@ -98,6 +99,7 @@ class Deserializer:
                 # But as we progress there could be multiple layers, ITERATION NEEDED
                 parseFunctionNode(front)
             appendOutPortNodes(front)
+        return masterOutput
 
 
 

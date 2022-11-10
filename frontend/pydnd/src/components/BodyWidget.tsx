@@ -9,6 +9,7 @@ import { DemoCanvasWidget } from './CanvasWidget';
 import styled from '@emotion/styled';
 import Button from '@mui/material/Button';
 import { SidebarWidget } from './SidebarWidget';
+import { OutputWidget } from './OutputWidget';
 import { ParameterNodeModel } from './customNodes/ParameterNodeModel';
 
 export interface BodyWidgetProps {
@@ -34,6 +35,11 @@ namespace S {
 		align-items: center;
 	`;
 
+	export const Main = styled.div`
+		display: flex;
+		flex-direction: column;
+		flex-grow: 1;
+	`;
 	export const Content = styled.div`
 		display: flex;
 		flex-grow: 1;
@@ -127,6 +133,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 						<TrayItemWidget model={{ type: 'return' }} name="Return" color="rgb(112,128,144)" />
 						<TrayItemWidget model={{ type: 'print' }} name="Print" color="rgb(224, 203, 81)" />
 					</TrayWidget>
+					<S.Main>
 					<S.Layer
 						onDrop={(event) => {
 							var data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
@@ -184,7 +191,8 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 							<CanvasWidget engine={this.props.app.getDiagramEngine()} />
 						</DemoCanvasWidget>
 					</S.Layer>
-					
+					<OutputWidget textBody={"test\naaa"}/>
+					</S.Main>
 					<SidebarWidget 
 						nodeSelected={nodeSelected} 
 						onClose={() => {this.setState({nodeSelected: null})}}/>

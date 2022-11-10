@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import Editor from "@monaco-editor/react";
 
-const CodeEditorWindow = ({ onChange, code, theme }) => {
+const CodeEditorWindow = ({ onChange, code }) => {
   const [value, setValue] = useState(code || "");
 
   const handleEditorChange = (value) => {
@@ -18,7 +18,7 @@ const CodeEditorWindow = ({ onChange, code, theme }) => {
         language="python"
         value={value}
         theme="vs-dark"
-        defaultValue="# Write your function below"
+        defaultValue={code || "# Write your function below"}
         onChange={handleEditorChange}
       />
     </div>
