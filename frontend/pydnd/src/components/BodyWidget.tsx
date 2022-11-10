@@ -60,7 +60,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			this.forceUpdate();
 		}, name: 'Parameter', color: 'rgb(0,192,255)'});
 		let port = node1.addOutPort('Out');
-		node1.setPosition(100, 100);
+		node1.setPosition(300, 300);
 
 		//3-B) create another default node
 		var node2 = new ParameterNodeModel({
@@ -70,7 +70,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			this.forceUpdate();
 		}, name: 'Output', color: 'rgb(192,255,0)'});
 		let port2 = node2.addInPort('In');
-		node2.setPosition(400, 100);
+		node2.setPosition(600, 300);
 
 
 		// link the ports
@@ -84,6 +84,11 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 		const {
 			nodeSelected,
 		} = this.state;
+		const doubleClickNode = (node) => {
+			this.setState({
+				nodeSelected: node
+			});
+		}
 		return (
 			<S.Body>
 				<S.Header>
@@ -119,6 +124,8 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
                         <TrayItemWidget model={{ type: 'param' }} name="Parameter" color="rgb(0,192,255)" />
 						<TrayItemWidget model={{ type: 'output' }} name="Output" color="rgb(192,255,0)" />
 						<TrayItemWidget model={{ type: 'function' }} name="Function" color="rgb(192,0,255)" />
+						<TrayItemWidget model={{ type: 'return' }} name="Return" color="rgb(112,128,144)" />
+						<TrayItemWidget model={{ type: 'print' }} name="Print" color="rgb(224, 203, 81)" />
 					</TrayWidget>
 					<S.Layer
 						onDrop={(event) => {
@@ -132,8 +139,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 									name: 'Output', 
 									color: 'rgb(192,255,0)',
 									onDoubleClick: () => { 
-										this.setState({ nodeSelected: node });
-										this.forceUpdate();
+										doubleClickNode(node);
 									} 
 								});
 								node.addInPort('In');
@@ -143,8 +149,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 									name: 'Parameter', 
 									color: 'rgb(0,192,255)',
 									onDoubleClick: () => { 
-										this.setState({ nodeSelected: node });
-										this.forceUpdate();
+										doubleClickNode(node);
 									} 
 								});
 								node.addOutPort('Out');
@@ -154,16 +159,20 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 									name: 'Function', 
 									color: 'rgb(192,0,255)',
 									onDoubleClick: () => { 
-										this.setState({ nodeSelected: node });
-										this.forceUpdate();
+										doubleClickNode(node);
 									} 
 								});
+								node.addInPort('Exec In');
+								node.addOutPort('Exec Out')
+							} else if (data.type === 'return') {
+								node = new DefaultNodeModel({name: 'Return', color: 'rgb(112,128,144)'});
+								node.addInPort('Exec In');
+							} else if (data.type === 'print') {
+								node = new DefaultNodeModel({name: 'Print', color: 'rgb(224, 203, 81)'});
+								node.addInPort('Exec In');
 							}
 							var point = this.props.app.getDiagramEngine().getRelativeMousePoint(event);
 							node.setPosition(point);
-                            // node.registerListener({
-                            //     eventDidFire: () => {alert("hi")}
-                            // })
 							this.props.app.getDiagramEngine().getModel().addNode(node);
 							this.forceUpdate();
 						}}

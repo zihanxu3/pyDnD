@@ -49,12 +49,14 @@ export class ParameterNodeModel extends DefaultNodeModel {
 		}
 		return this.functionInputs.join(',');
 	}
+
 	getFuntionOutputs(): string {
 		if (typeof this.functionOutputs === 'undefined') { 
 			return '';
 		}
 		return this.functionOutputs.join(',');
 	}
+	
 	getFuntionBody(): string {
 		return this.functionBody;
 	}
@@ -65,47 +67,51 @@ export class ParameterNodeModel extends DefaultNodeModel {
     }
 
 	setFunctionParams(functionInputs: string, functionOutputs: string, functionBody: string): void {
-		this.functionInputs = functionInputs.split(',');
-		this.functionOutputs = functionOutputs.split(',');
+		if (functionInputs !== '') this.functionInputs = functionInputs.split(',');
+		if (functionOutputs !== '') this.functionOutputs = functionOutputs.split(',');
 		this.functionBody = functionBody;
 	}
 
 	addAllInAndOuts() {
 		var prev = '';
 		var counter = 0;
-		for (var val of this.functionInputs){
-			if (val === prev) counter += 1;
-			else counter = 0;
-			this.addInPort('i' + val + '-' + String(counter));
-			prev = val;
+		if (this.functionInputs) {
+			for (var val of this.functionInputs){
+				if (val === prev) counter += 1;
+				else counter = 0;
+				this.addInPort('I' + '-' + val + '-' + String(counter));
+				prev = val;
+			}
 		}
 
 		prev = '';
 		counter = 0;
-		for (var val of this.functionOutputs){
-			if (val === prev) counter += 1;
-			else counter = 0;
-			this.addOutPort('o' + val + '-' + String(counter));
-			prev = val;
+		if (this.functionOutputs) {
+			for (var val of this.functionOutputs){
+				if (val === prev) counter += 1;
+				else counter = 0;
+				this.addOutPort('O' + '-' + val + '-' + String(counter));
+				prev = val;
+			}
 		}
 		return;
 	}
 
 	serialize() {
-		if (this.mode == 'variable') {
+		if (this.mode === 'variable') {
 			return {
 				...super.serialize(),
 				value: this.value,
 				type: this.type
 			};
-		} else if (this.mode == 'function') {
+		} else if (this.mode === 'function') {
 			return {
 				...super.serialize(),
 				functionInputs: this.functionInputs,
 				functionOutputs: this.functionOutputs,
 				functionBody: this.functionBody,
 			};
-		} else if (this.mode == 'output') {
+		} else if (this.mode === 'output') {
 			return {
 				...super.serialize(),
 			}

@@ -1,7 +1,6 @@
 import * as SRD from '@projectstorm/react-diagrams';
 import { ParameterNodeFactory } from './components/customNodes/ParameterNodeFactory';
-import { ParameterNodeModel } from './components/customNodes/ParameterNodeModel';
-import { NodeModel, DefaultPortModel, PortModelAlignment } from '@projectstorm/react-diagrams';
+// import { ParameterNodeModel } from './components/customNodes/ParameterNodeModel';
 
 /**
  * @author Dylan Vorster
@@ -23,6 +22,11 @@ export class Application {
 
 		this.activeModel = new SRD.DiagramModel();
 		this.diagramEngine.setModel(this.activeModel);
+
+		var node = new SRD.DefaultNodeModel({name: 'Entry Point', color: 'rgb(238, 75, 43)'});
+		node.setPosition(100, 100);
+		node.addOutPort('Exec Out');
+		this.activeModel.addNode(node);
 	}
 
 	public getActiveDiagram(): SRD.DiagramModel {
