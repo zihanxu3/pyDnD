@@ -12,7 +12,7 @@ namespace S {
 		color: white;
 		font-family: Helvetica, Arial;
 		padding: 5px;
-		margin: 0px 10px;
+		margin: 20px 30px;
 		border: solid 1px ${(p) => p.color};
 		border-radius: 5px;
 		margin-bottom: 2px;

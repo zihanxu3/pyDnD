@@ -10,6 +10,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import CodeEditorWindow from './CodeEditWidget';
 
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
@@ -52,6 +53,19 @@ export class SidebarWidget extends React.Component<any, any> {
 		}
 		console.log("constructed");
 
+	}
+	componentDidUpdate(prevProps: Readonly<any>, prevState: Readonly<any>, snapshot?: any): void {
+		console.log('called');
+		if (prevProps.nodeSelected !== this.props.nodeSelected) {
+			this.setState({
+				variableType: this.props.nodeSelected === null || this.props.nodeSelected.getValueAndType()[1] === '' ? 0 : types.indexOf(this.props.nodeSelected.getValueAndType()[1]),
+				textBoxValue: this.props.nodeSelected === null ? '' : this.props.nodeSelected.getValueAndType()[0],
+				functionInputs: this.props.nodeSelected === null ? '' : this.props.nodeSelected.getFuntionInputs(),
+				functionOutputs: this.props.nodeSelected === null ? '' : this.props.nodeSelected.getFuntionOutputs(),
+				functionBody: this.props.nodeSelected === null ? '' : this.props.nodeSelected.getFuntionBody(),
+				open: false,
+			});
+		}
 	}
 	render() {
 		const {
@@ -155,7 +169,7 @@ export class SidebarWidget extends React.Component<any, any> {
 							placeholder='Put in your function output types here, in order, separated by commas. E.g. number,number,list. If void, put nothing.'
 						/>
 					</div>
-					<div style={{ marginTop: 20 }}>
+					{/* <div style={{ marginTop: 20 }}>
 						<TextField
 							label="Function Body"
 							multiline
@@ -168,13 +182,26 @@ export class SidebarWidget extends React.Component<any, any> {
 							}}
 							placeholder='Put in your function body here.'
 						/>
+					</div> */}
+					<div style={{display: 'block', margin: 20 }}>
+						<CodeEditorWindow code={functionBody} theme="cobalt" onChange={(action, data) => {
+							switch (action) {
+								case "code": {
+									this.setState({ functionBody: data });
+									break;
+								}
+								default: {
+									console.warn("case not handled!", action, data);
+								}
+							}
+						}}/>
 					</div>
 					<div style={{ marginTop: 20 }}>
 						<Button variant="outlined" onClick={() => {
 							this.setState({
 								open: true,
 							});
-							if (this.props.nodeSelected.getFuntionInputs() !== functionInputs) { 
+							if (functionInputs === '' || this.props.nodeSelected.getFuntionInputs() !== functionInputs) {
 								this.props.nodeSelected.setFunctionParams(functionInputs, functionOutputs, functionBody);
 								this.props.nodeSelected.addAllInAndOuts();
 							}

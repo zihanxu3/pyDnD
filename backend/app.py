@@ -16,6 +16,5 @@ def hello():
 @app.route('/compile', methods=['POST'])
 def compile():
     deserializer = Deserializer(request.get_json())
-    deserializer.parseAllNodes()
-    
+    deserializer.linkNodes()
     return jsonify({'hi': 2}), 200
