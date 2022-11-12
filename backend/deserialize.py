@@ -88,8 +88,8 @@ class Deserializer:
                     outputLinks.append(v['links'])
             outputs, prints = executeFunction(functionBody=funtionBody, functionArgs=inputVals)
             # Ignore linking function for now and return directly 
-            masterOutput.append(prints)
-            masterOutput.append(outputs)
+            masterOutput.extend(prints)
+            masterOutput.extend(outputs)
 
         
         while nodes:

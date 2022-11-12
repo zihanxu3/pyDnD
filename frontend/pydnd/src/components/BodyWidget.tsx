@@ -57,6 +57,8 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 		super(props);
 		this.state = {
 			nodeSelected: null,
+			consoleOutput: '',
+			consoleOpen: false,
 		}
 		//3-A) create a default node
 		var node1 = new ParameterNodeModel({
@@ -89,6 +91,8 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 		console.log(this.props.app.getDiagramEngine().getModel().serialize());
 		const {
 			nodeSelected,
+			consoleOutput,
+			consoleOpen,
 		} = this.state;
 		const doubleClickNode = (node) => {
 			this.setState({
@@ -119,6 +123,10 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 										console.log(e)
 									}
 									console.log(jsonResponse);
+									this.setState({
+										consoleOutput: jsonResponse,
+										consoleOpen: true,
+									});
 								}
 							}>
 							Run
@@ -191,7 +199,11 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 							<CanvasWidget engine={this.props.app.getDiagramEngine()} />
 						</DemoCanvasWidget>
 					</S.Layer>
-					<OutputWidget textBody={"test\naaa"}/>
+					<OutputWidget consoleOpen={consoleOpen} textBody={consoleOutput} onClose={() => { 
+						this.setState({
+							consoleOpen: false,
+						})
+					}}/>
 					</S.Main>
 					<SidebarWidget 
 						nodeSelected={nodeSelected} 

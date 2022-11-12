@@ -1,3 +1,4 @@
 # Write your function below
-def li(a, b):
-    return [a + 5] + b, a * [b]
+def unpac(a, b):
+    print(a, b)
+    return b[a]
