@@ -28,11 +28,10 @@ export interface SidebarWidgetProps {
 
 namespace S {
 	export const RightTray = styled.div`
-		min-width: 300px;
+		min-width: 350px;
 		background: rgb(211, 211, 211);
 		flex-grow: 0;
 		flex-shrink: 0;
-        margin-left: auto;
 	`;
 	export const TrayStack = styled.div`
 		text-align: center;
@@ -166,25 +165,11 @@ export class SidebarWidget extends React.Component<any, any> {
 									functionOutputs: event.target.value,
 								});
 							}}
-							placeholder='Put in your function output types here, in order, separated by commas. E.g. number,number,list. If void, put nothing.'
+							placeholder='Put in your function output types here, in order, separated by commas. E.g. int,int,list. If void, put nothing.'
 						/>
 					</div>
-					{/* <div style={{ marginTop: 20 }}>
-						<TextField
-							label="Function Body"
-							multiline
-							rows={7}
-							value={functionBody}
-							onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-								this.setState({
-									functionBody: event.target.value,
-								});
-							}}
-							placeholder='Put in your function body here.'
-						/>
-					</div> */}
 					<div style={{display: 'block', margin: 20 }}>
-						<CodeEditorWindow code={functionBody} theme="cobalt" onChange={(action, data) => {
+						<CodeEditorWindow code={functionBody} onChange={(action, data) => {
 							switch (action) {
 								case "code": {
 									this.setState({ functionBody: data });
@@ -202,8 +187,15 @@ export class SidebarWidget extends React.Component<any, any> {
 								open: true,
 							});
 							if (functionInputs === '' || this.props.nodeSelected.getFuntionInputs() !== functionInputs) {
-								this.props.nodeSelected.setFunctionParams(functionInputs, functionOutputs, functionBody);
-								this.props.nodeSelected.addAllInAndOuts();
+								this.props.nodeSelected.setFunctionInputs(functionInputs);
+								this.props.nodeSelected.addAllInPorts();
+							}
+							if (functionOutputs === '' || this.props.nodeSelected.getFuntionOutputs() !== functionOutputs) {
+								this.props.nodeSelected.setFunctionOutputs(functionOutputs);
+								this.props.nodeSelected.addAllOutPorts();
+							}
+							if (functionBody === '' || this.props.nodeSelected.getFuntionBody() !== functionBody) {
+								this.props.nodeSelected.setFunctionBody(functionBody);
 							}
 						}}>Save</Button>
 					</div>
@@ -222,8 +214,9 @@ export class SidebarWidget extends React.Component<any, any> {
 					</Snackbar>
 				</div>
 		} else if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'output') {
-			<p>eeeee</p>;
+			<p></p>;
 		}
+
 		return <S.RightTray style={{ display: this.props.nodeSelected !== null ? 'block' : 'none' }}>
 			<IconButton aria-label="delete" onClick={() => {
 				this.props.onClose();

@@ -56,7 +56,7 @@ export class ParameterNodeModel extends DefaultNodeModel {
 		}
 		return this.functionOutputs.join(',');
 	}
-	
+
 	getFuntionBody(): string {
 		return this.functionBody;
 	}
@@ -66,13 +66,23 @@ export class ParameterNodeModel extends DefaultNodeModel {
 		this.type = type;
     }
 
-	setFunctionParams(functionInputs: string, functionOutputs: string, functionBody: string): void {
+	setFunctionInputs(functionInputs: string): void {
 		if (functionInputs !== '') this.functionInputs = functionInputs.split(',');
+	}
+
+	setFunctionOutputs(functionOutputs: string): void {
 		if (functionOutputs !== '') this.functionOutputs = functionOutputs.split(',');
+	}
+
+	setFunctionBody(functionBody: string): void {
 		this.functionBody = functionBody;
 	}
 
-	addAllInAndOuts() {
+	addAllInPorts() {
+		this.getInPorts().forEach(item => 
+			{	
+				if (item.getName() !== 'Exec In') this.removePort(item)
+			});
 		var prev = '';
 		var counter = 0;
 		if (this.functionInputs) {
@@ -83,9 +93,17 @@ export class ParameterNodeModel extends DefaultNodeModel {
 				prev = val;
 			}
 		}
+		return;
+	}
 
-		prev = '';
-		counter = 0;
+	addAllOutPorts() {
+		this.getOutPorts().forEach(
+			item => 
+			{	
+				if (item.getName() !== 'Exec Out') this.removePort(item)
+			});
+		var prev = '';
+		var counter = 0;
 		if (this.functionOutputs) {
 			for (var val of this.functionOutputs){
 				if (val === prev) counter += 1;

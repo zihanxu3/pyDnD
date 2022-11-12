@@ -1,3 +1,4 @@
 # Write your function below
-def func(a, b, c):
-    return [a, b, c]
+def unpac(a, b):
+    print(a, b)
+    return b[a]

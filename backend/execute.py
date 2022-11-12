@@ -1,5 +1,9 @@
 import inspect
 import sys
+import temp
+
+from importlib import reload
+
 class ListStream:
     def __init__(self):
         self.data = []
@@ -19,9 +23,11 @@ def executeFunction(functionBody, functionArgs):
     file = open('temp.py', 'w')
     file.write(functionBody)
     file.close()
-    
-    import temp
-    functionCall = getattr(temp, parseFunctionName())
+
+    reload(temp)
     sys.stdout = printStatms = ListStream()
-    print(inspect.getargspec(functionCall).args)
-    return [functionCall(*functionArgs)], printStatms.data
+    functionCall = getattr(temp, parseFunctionName())
+    # print(inspect.getargspec(functionCall).args)
+    res = [functionCall(*functionArgs)]
+    sys.stdout = sys.__stdout__
+    return res, printStatms.data
