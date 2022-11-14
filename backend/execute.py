@@ -6,9 +6,16 @@ from importlib import reload
 
 class ListStream:
     def __init__(self):
-        self.data = []
+        self.data = '> '
+        self.seeEnd = False
     def write(self, s):
-        self.data.append(s)
+        
+        if s == '\n': 
+            self.seeEnd = True
+        elif self.seeEnd:
+            self.data += '> '
+            self.seeEnd = False
+        self.data += s
 
 def executeFunction(functionBody, functionArgs):
     fcopy = functionBody
