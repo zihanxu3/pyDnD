@@ -11,6 +11,7 @@ import Button from '@mui/material/Button';
 import { SidebarWidget } from './SidebarWidget';
 import { OutputWidget } from './OutputWidget';
 import { ParameterNodeModel } from './customNodes/ParameterNodeModel';
+import ModalDialogWidget from './ModalDialogWidget';
 
 export interface BodyWidgetProps {
 	app: Application;
@@ -59,6 +60,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			nodeSelected: null,
 			consoleOutput: '',
 			consoleOpen: false,
+			formOpen: false,
 		}
 		//3-A) create a default node
 		var node1 = new ParameterNodeModel({
@@ -93,6 +95,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			nodeSelected,
 			consoleOutput,
 			consoleOpen,
+			formOpen,
 		} = this.state;
 		const doubleClickNode = (node) => {
 			this.setState({
@@ -103,34 +106,45 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			<S.Body>
 				<S.Header>
 					<div className="title">CS 5412 PyDnD Project</div>
-					<div style={{marginLeft: 'auto'}}>
-						<Button variant="outlined" onClick={
-								async () => {
-									// https://pydnd-azure-backend-xyz.azurewebsites.net/compile
-									const rawResponse = await fetch('/compile', {
-										method: 'POST',
-										headers: {
-											'Accept': 'application/json',
-											'Content-Type': 'application/json'
-										},
-										// mode: 'cors',
-										body: JSON.stringify(this.props.app.getDiagramEngine().getModel().serialize())
-									});
-									let jsonResponse;
-									try {
-										jsonResponse = await rawResponse.json();
-									} catch (e) {
-										console.log(e)
+					<div style={{marginLeft: 'auto', display: 'flex', flexDirection: 'row'}}>
+						<div style={{marginRight: "10px"}} >
+							<Button variant="outlined" onClick={() => {
+								this.setState({
+									formOpen: true,
+								})
+							}}>
+								Sign In
+							</Button>
+						</div>
+						<div>
+							<Button variant="outlined" onClick={
+									async () => {
+										// https://pydnd-azure-backend-xyz.azurewebsites.net/compile
+										const rawResponse = await fetch('/compile', {
+											method: 'POST',
+											headers: {
+												'Accept': 'application/json',
+												'Content-Type': 'application/json'
+											},
+											// mode: 'cors',
+											body: JSON.stringify(this.props.app.getDiagramEngine().getModel().serialize())
+										});
+										let jsonResponse;
+										try {
+											jsonResponse = await rawResponse.json();
+										} catch (e) {
+											console.log(e)
+										}
+										console.log(jsonResponse);
+										this.setState({
+											consoleOutput: jsonResponse,
+											consoleOpen: true,
+										});
 									}
-									console.log(jsonResponse);
-									this.setState({
-										consoleOutput: jsonResponse,
-										consoleOpen: true,
-									});
-								}
-							}>
-							Run
-						</Button>
+								}>
+								Run
+							</Button>
+						</div>
 					</div>
 				</S.Header>
 				<S.Content>
@@ -208,6 +222,11 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 					<SidebarWidget 
 						nodeSelected={nodeSelected} 
 						onClose={() => {this.setState({nodeSelected: null})}}/>
+					<ModalDialogWidget open={formOpen} handleClose={ () => {
+						this.setState({
+							formOpen: false,
+						})
+					}}/>
 				</S.Content>
 			</S.Body>
 		);

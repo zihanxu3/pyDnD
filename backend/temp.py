@@ -1,4 +1,4 @@
 # Write your function below
-def unpac(a, b):
+def func(a, b):
     print(a, b)
-    return b[a - 2]
+    return b[a]
