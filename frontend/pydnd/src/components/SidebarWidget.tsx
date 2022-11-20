@@ -114,6 +114,10 @@ export class SidebarWidget extends React.Component<any, any> {
 							placeholder={`Put in your ${types[variableType]} here.`}
 						/>
 					</div>
+					<div>
+						<p> or you can: </p>
+						{/* <input ref={fileInput} type="file" /> */}
+					</div>
 					<div style={{ marginTop: 20 }}>
 						<Button variant="outlined" onClick={() => {
 							this.setState({
@@ -168,7 +172,7 @@ export class SidebarWidget extends React.Component<any, any> {
 							placeholder='Put in your function output types here, in order, separated by commas. E.g. int,int,list. If void, put nothing.'
 						/>
 					</div>
-					<div style={{display: 'block', margin: 20 }}>
+					<div style={{ display: 'block', margin: 20 }}>
 						<CodeEditorWindow code={functionBody} onChange={(action, data) => {
 							switch (action) {
 								case "code": {
@@ -179,7 +183,7 @@ export class SidebarWidget extends React.Component<any, any> {
 									console.warn("case not handled!", action, data);
 								}
 							}
-						}}/>
+						}} />
 					</div>
 					<div style={{ marginTop: 20 }}>
 						<Button variant="outlined" onClick={() => {

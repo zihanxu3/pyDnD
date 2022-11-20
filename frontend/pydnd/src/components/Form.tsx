@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button } from '@mui/material';
+import { TextField, Button, Link } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 
 const useStyles = makeStyles()((theme) => {
@@ -25,11 +25,11 @@ const useStyles = makeStyles()((theme) => {
 const Form = ({ handleClose }) => {
     const { classes } = useStyles();
     // create state variables for each input
+    const [signIn, setSignIn] = useState(false);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
     const handleSubmit = e => {
         e.preventDefault();
         console.log(firstName, lastName, email, password);
@@ -38,20 +38,22 @@ const Form = ({ handleClose }) => {
 
     return (
         <form className={classes.root} onSubmit={handleSubmit}>
-            <TextField
-                label="First Name"
-                variant="filled"
-                required
-                value={firstName}
-                onChange={e => setFirstName(e.target.value)}
-            />
-            <TextField
-                label="Last Name"
-                variant="filled"
-                required
-                value={lastName}
-                onChange={e => setLastName(e.target.value)}
-            />
+            <div style={{display: signIn ? 'none' : 'flex', flexDirection: 'column'}}>
+                <TextField
+                    label="First Name"
+                    variant="filled"
+                    required
+                    value={firstName}
+                    onChange={e => setFirstName(e.target.value)}
+                />
+                <TextField
+                    label="Last Name"
+                    variant="filled"
+                    required
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                />
+            </div>
             <TextField
                 label="Email"
                 variant="filled"
@@ -69,11 +71,18 @@ const Form = ({ handleClose }) => {
                 onChange={e => setPassword(e.target.value)}
             />
             <div>
+                <Link href="#" onClick={() => {
+                    setSignIn(!signIn)
+                }}>
+                  {signIn ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+                </Link>
+            </div>
+            <div>
                 <Button variant="contained" onClick={handleClose}>
                     Cancel
                 </Button>
                 <Button type="submit" variant="contained" color="primary">
-                    Signup
+                    {signIn ? "SignIn" : "Signup"}
                 </Button>
             </div>
         </form>

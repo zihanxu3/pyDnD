@@ -12,6 +12,7 @@ import { SidebarWidget } from './SidebarWidget';
 import { OutputWidget } from './OutputWidget';
 import { ParameterNodeModel } from './customNodes/ParameterNodeModel';
 import ModalDialogWidget from './ModalDialogWidget';
+import FileUploadSidebarWidget from './FileUploadSidebar';
 
 export interface BodyWidgetProps {
 	app: Application;
@@ -61,6 +62,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			consoleOutput: '',
 			consoleOpen: false,
 			formOpen: false,
+			myDriveOpen: false,
 		}
 		//3-A) create a default node
 		var node1 = new ParameterNodeModel({
@@ -96,6 +98,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			consoleOutput,
 			consoleOpen,
 			formOpen,
+			myDriveOpen,
 		} = this.state;
 		const doubleClickNode = (node) => {
 			this.setState({
@@ -109,11 +112,18 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 					<div style={{marginLeft: 'auto', display: 'flex', flexDirection: 'row'}}>
 						<div style={{marginRight: "10px"}} >
 							<Button variant="outlined" onClick={() => {
+								this.setState({myDriveOpen: true});
+							}}>
+								My Files
+							</Button>
+						</div>
+						<div style={{marginRight: "10px"}} >
+							<Button variant="outlined" onClick={() => {
 								this.setState({
 									formOpen: true,
 								})
 							}}>
-								Sign In
+								Sign Up
 							</Button>
 						</div>
 						<div>
@@ -222,6 +232,10 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 					<SidebarWidget 
 						nodeSelected={nodeSelected} 
 						onClose={() => {this.setState({nodeSelected: null})}}/>
+					<FileUploadSidebarWidget 
+						open={myDriveOpen}
+						uid='hunter' 
+						onClose={() => {this.setState({myDriveOpen: false})}}/>
 					<ModalDialogWidget open={formOpen} handleClose={ () => {
 						this.setState({
 							formOpen: false,
