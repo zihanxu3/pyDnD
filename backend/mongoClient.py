@@ -44,27 +44,25 @@ def createUser(firstName, lastName, email, password):
     doc = collection.find_one({"email": email})
     if doc:
         print("User already exists!")
-        return 0, doc
+        return 1, {'uid': doc['uid'], 'firstName': doc['firstName'], 'lastName': doc['lastName'], 'email': doc['email']}
     user = {
         "uid": str(hashlib.md5((firstName + lastName + email + password).encode('utf-8')).hexdigest()),
         "email": email,
-        "password": password,
-        "content": {
-            "firstName": firstName,
-            "lastName": lastName,
-            "files": [],
-        }
+        "password": str(hashlib.md5(password.encode('utf-8')).hexdigest()),
+        "firstName": firstName,
+        "lastName": lastName,
     }
     result = collection.update_one(
         {"uid": user["uid"]}, {"$set": user}, upsert=True
     )
     print("Created with user with _id {}\n".format(result.upserted_id))
-    return 1, doc
+    doc = collection.find_one({"_id": result.upserted_id})
+    return 0, {'uid': doc['uid'], 'firstName': doc['firstName'], 'lastName': doc['lastName'], 'email': doc['email']}
 
 def authUser(email, password):
-    doc = collection.find_one({"email": email, "password": password})
+    doc = collection.find_one({"email": email, "password": str(hashlib.md5(password.encode('utf-8')).hexdigest())})
     if not doc:
         print("User Not Found!")
-        return 0, None
+        return 1, {}
     print("Found a user with _id {}: {}\n".format(doc['uid'], doc))
-    return 1, doc
+    return 0, {'uid': doc['uid'], 'firstName': doc['firstName'], 'lastName': doc['lastName'], 'email': doc['email']}

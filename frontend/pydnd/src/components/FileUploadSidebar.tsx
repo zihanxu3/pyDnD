@@ -12,6 +12,13 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import CodeEditorWindow from './CodeEditWidget';
 
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+	props,
+	ref,
+) {
+	return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
 namespace S {
     export const RightTray = styled.div`
 		min-width: 350px;
@@ -25,10 +32,11 @@ namespace S {
 }
 
 
-const FileUploadSidebarWidget = ({ open, uid, onClose }) => {
+const FileUploadSidebarWidget = ({ uid, fileList, onClose }) => {
     const [fileInput, setFileInput] = useState(null);
+    const [open, setOpen] = useState(false);
     return (
-        <S.RightTray style={{ display: open ? 'block' : 'none' }}>
+        <S.RightTray>
             <IconButton aria-label="delete" onClick={() => {
 				onClose();
 			}}>
@@ -36,12 +44,13 @@ const FileUploadSidebarWidget = ({ open, uid, onClose }) => {
             </IconButton>
             <S.TrayStack>
                 <h3 style={{marginBottom: "20px"}}>My Files</h3>
-                <p style={{marginBottom: "20px"}}>No file has been uploaded</p>
-                <h3 style={{marginBottom: "20px"}}>Upload Files</h3>
+                {(fileList).map((v) => {
+                    console.log(v);
+                    return <p style={{marginBottom: "20px"}}>{v}</p>;
+                })}
+                <h3 style={{marginTop: "50px", marginBottom: "20px"}}>Upload Files</h3>
                 <input ref={(ref) => {
-                    if (open) {
-                        setFileInput(ref)
-                    }
+                    setFileInput(ref)
                 }} type="file" style={{marginBottom: "90px"}} />
                 <div>
                     <Button variant="outlined" onClick={async (e) => { 
@@ -63,10 +72,24 @@ const FileUploadSidebarWidget = ({ open, uid, onClose }) => {
                             } catch (e) {
                                 console.log(e)
                             }
+                            setOpen(true);
                             console.log(jsonResponse);
                             
                         }
                     }}>Save</Button>
+                    <Snackbar
+						open={open}
+						autoHideDuration={2000}
+						onClose={() => { setOpen(false) }}
+					>
+						<Alert
+							onClose={() => { setOpen(false) }}
+							severity="success"
+							sx={{ width: '100%' }}
+						>
+							Saved Successfully!
+						</Alert>
+					</Snackbar>
                 </div>
             </S.TrayStack>
         </S.RightTray>

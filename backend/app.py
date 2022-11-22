@@ -34,8 +34,6 @@ def hello():
 @app.route('/compile', methods=['POST'])
 def compile():
     reqJson = request.get_json()
-    mongoClient.createUser('a', 'b', 'c', 'd')
-    mongoClient.authUser('c', 'dd')
     hashing = make_hash(reqJson)
     if r.get(hashing) != None:
         return jsonify(r.get(hashing).decode('utf-8')), 200
@@ -47,7 +45,7 @@ def compile():
     #     ret += '> ' + str(i) + '\n'
     
     r.set(hashing, bytes(ret, 'utf-8'))
-    return jsonify(ret), 200
+    return jsonify(ret)
 
 @app.route('/upload', methods=['POST'])
 def fileUpload():
@@ -55,7 +53,32 @@ def fileUpload():
     # fileName = file.filename
     uid = request.form['uid']
     fileClient.uploadFile(file, uid)
-    fileClient.testDownloadFiles(uid)
+    # fileClient.testDownloadFiles(uid)
     return {1: 'successfully upload'}
+
+@app.route('/listfiles', methods=['POST'])
+def listFiles():
+    # file = request.files['file']
+    # fileName = file.filename
+    uid = request.get_json()['uid']
+    files = fileClient.listFilesInContainer(uid)
+    # fileClient.testDownloadFiles(uid)
+    return jsonify(files)
+
+@app.route('/signup', methods=['POST'])
+def signUp():
+    form = request.get_json()
+    
+    status, body = mongoClient.createUser(form['firstName'], form['lastName'], form['email'], form['password'])
+    print(body)
+    return {'stat': status, 'body': body}
+
+@app.route('/signin', methods=['POST'])
+def signIn():
+    form = request.get_json()
+    status, body = mongoClient.authUser(form['email'], form['password'])
+    print(body)
+    print(jsonify(body))
+    return {'stat': status, 'body': body}
 
 # CORS(app, expose_headers='Authorization')

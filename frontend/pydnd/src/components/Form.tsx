@@ -9,7 +9,7 @@ const useStyles = makeStyles()((theme) => {
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            padding: theme.spacing(2),
+            padding: theme.spacing(5),
 
             '& .MuiTextField-root': {
                 margin: theme.spacing(1),
@@ -22,38 +22,107 @@ const useStyles = makeStyles()((theme) => {
     }
 });
 
-const Form = ({ handleClose }) => {
+const Form = ({ handleClose, setUser }) => {
     const { classes } = useStyles();
     // create state variables for each input
     const [signIn, setSignIn] = useState(false);
+    const [error, setError] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const handleSubmit = e => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(firstName, lastName, email, password);
+        if (signIn) {
+
+            const response = await fetch('/signin', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                // mode: 'cors',
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                })
+            })
+            let data;
+            try {
+                data = await response.json();
+            } catch (e) {
+                console.log(e);
+            }
+            console.log(response);
+
+            if (data['stat']) {
+                setError("Invalid username or password.");
+                return;
+            }
+            console.log(data);
+            // TODO: Set user 
+            setError("");
+            setUser(data['body']);
+            console.log(email, password);
+
+        } else {
+
+            const response = await fetch('/signup', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                // mode: 'cors',
+                body: JSON.stringify({
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    password: password,
+                })
+            })
+            let data;
+            try {
+                data = await response.json();
+            } catch (e) {
+                console.log(e);
+            }
+            console.log(response);
+            console.log(data);
+            if (data['stat']) {
+                setError("This email has already registered.");
+                return;
+            }
+            // TODO: Set user 
+            setError("");
+            setUser(data['body']);
+            console.log(email, password);
+
+        }
         handleClose();
     };
 
     return (
         <form className={classes.root} onSubmit={handleSubmit}>
-            <div style={{display: signIn ? 'none' : 'flex', flexDirection: 'column'}}>
-                <TextField
-                    label="First Name"
-                    variant="filled"
-                    required
-                    value={firstName}
-                    onChange={e => setFirstName(e.target.value)}
-                />
-                <TextField
-                    label="Last Name"
-                    variant="filled"
-                    required
-                    value={lastName}
-                    onChange={e => setLastName(e.target.value)}
-                />
-            </div>
+            <p style={{color: 'red'}}>{error}</p>
+            {signIn ? <div></div> :
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <TextField
+                        label="First Name"
+                        variant="filled"
+                        required
+                        value={firstName}
+                        onChange={e => setFirstName(e.target.value)}
+                    />
+                    <TextField
+                        label="Last Name"
+                        variant="filled"
+                        required
+                        value={lastName}
+                        onChange={e => setLastName(e.target.value)}
+                    />
+                </div>
+            }
             <TextField
                 label="Email"
                 variant="filled"
@@ -72,9 +141,13 @@ const Form = ({ handleClose }) => {
             />
             <div>
                 <Link href="#" onClick={() => {
-                    setSignIn(!signIn)
+                    setSignIn(!signIn);
+                    setFirstName('');
+                    setLastName('');
+                    setEmail('');
+                    setPassword('');
                 }}>
-                  {signIn ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+                    {signIn ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
                 </Link>
             </div>
             <div>

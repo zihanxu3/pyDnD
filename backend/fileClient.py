@@ -25,7 +25,9 @@ def listFilesInContainer(uid):
 
     # List the blobs in the container
     blob_list = container.list_blobs()
-    return [file.name for file in blob_list]
+    res = [file.name for file in blob_list]
+    print(res)
+    return res 
 
 def testDownloadFiles(uid):
     local_path = './data'

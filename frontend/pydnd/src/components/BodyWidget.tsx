@@ -63,6 +63,8 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			consoleOpen: false,
 			formOpen: false,
 			myDriveOpen: false,
+			user: null,
+			fileList: [],
 		}
 		//3-A) create a default node
 		var node1 = new ParameterNodeModel({
@@ -87,7 +89,6 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 
 		// link the ports
 		let link1 = port.link(port2);
-
 		this.props.app.getDiagramEngine().getModel().addAll(node1, node2, link1);
 	}
 
@@ -99,6 +100,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			consoleOpen,
 			formOpen,
 			myDriveOpen,
+			user,
 		} = this.state;
 		const doubleClickNode = (node) => {
 			this.setState({
@@ -111,19 +113,34 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 					<div className="title">CS 5412 PyDnD Project</div>
 					<div style={{marginLeft: 'auto', display: 'flex', flexDirection: 'row'}}>
 						<div style={{marginRight: "10px"}} >
-							<Button variant="outlined" onClick={() => {
-								this.setState({myDriveOpen: true});
+							<Button variant="outlined" onClick={async () => {
+								if (user === null) {
+									this.setState({formOpen: true});
+								} else {
+									let resp = await fetch('/listfiles', {
+										method: 'POST',
+										headers: {
+											'Accept': 'application/json',
+											'Content-Type': 'application/json'
+										},
+										// mode: 'cors',
+										body: JSON.stringify({
+											uid: user['uid'],
+										})
+									});
+									let respJson = await resp.json();
+
+									this.setState({
+										fileList: respJson,
+									}, () => {
+										this.setState({
+											myDriveOpen: true,
+										});
+									});
+									
+								}
 							}}>
-								My Files
-							</Button>
-						</div>
-						<div style={{marginRight: "10px"}} >
-							<Button variant="outlined" onClick={() => {
-								this.setState({
-									formOpen: true,
-								})
-							}}>
-								Sign Up
+								{user === null ? 'Sign Up' : user['firstName'] + ' ' + user['lastName']}
 							</Button>
 						</div>
 						<div>
@@ -141,7 +158,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 										});
 										let jsonResponse;
 										try {
-											jsonResponse = await rawResponse.json();
+											jsonResponse = rawResponse.json();
 										} catch (e) {
 											console.log(e)
 										}
@@ -232,14 +249,19 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 					<SidebarWidget 
 						nodeSelected={nodeSelected} 
 						onClose={() => {this.setState({nodeSelected: null})}}/>
+					{myDriveOpen ? 
 					<FileUploadSidebarWidget 
-						open={myDriveOpen}
-						uid='hunter' 
+						uid={user === null ? '' : user['uid']}
+						fileList={this.state.fileList}
 						onClose={() => {this.setState({myDriveOpen: false})}}/>
+					: <div></div>}
 					<ModalDialogWidget open={formOpen} handleClose={ () => {
 						this.setState({
 							formOpen: false,
 						})
+					}} setUser={(user) => {
+						this.setState({user: user});
+						console.log(user);
 					}}/>
 				</S.Content>
 			</S.Body>
