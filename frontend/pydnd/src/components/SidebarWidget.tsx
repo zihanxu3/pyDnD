@@ -24,6 +24,8 @@ export interface SidebarWidgetProps {
 	nodeSelected: any;
 	onClose: () => void;
 	onSave: () => void;
+	user: any;
+	fileList: any;
 }
 
 namespace S {
@@ -37,13 +39,14 @@ namespace S {
 		text-align: center;
 	`;
 }
-const types = ['number', 'list', 'dict', 'set'];
+var types = ['number', 'list', 'dict', 'set'];
 
 export class SidebarWidget extends React.Component<any, any> {
 	constructor(props) {
 		super(props);
 		this.state = {
 			variableType: 0,
+			fileIdx: 0,
 			textBoxValue: '',
 			functionInputs: '',
 			functionOutputs: '',
@@ -51,8 +54,8 @@ export class SidebarWidget extends React.Component<any, any> {
 			open: false,
 		}
 		console.log("constructed");
-
 	}
+	
 	componentDidUpdate(prevProps: Readonly<any>, prevState: Readonly<any>, snapshot?: any): void {
 		console.log('called');
 		if (prevProps.nodeSelected !== this.props.nodeSelected) {
@@ -64,10 +67,12 @@ export class SidebarWidget extends React.Component<any, any> {
 				functionBody: this.props.nodeSelected === null ? '' : this.props.nodeSelected.getFuntionBody(),
 				open: false,
 			});
+			if (this.props.user !== null && types.length <= 4) types = [...types, 'file'];
 		}
 	}
 	render() {
 		const {
+			fileIdx,
 			variableType,
 			textBoxValue,
 			functionInputs,
@@ -100,30 +105,56 @@ export class SidebarWidget extends React.Component<any, any> {
 							</Select>
 						</FormControl>
 					</div>
-					<div style={{ marginTop: 20 }}>
-						<TextField
-							label="Value"
-							multiline
-							rows={4}
-							value={textBoxValue}
-							onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-								this.setState({
-									textBoxValue: event.target.value,
-								});
-							}}
-							placeholder={`Put in your ${types[variableType]} here.`}
-						/>
-					</div>
-					<div>
-						<p> or you can: </p>
-						{/* <input ref={fileInput} type="file" /> */}
-					</div>
+					{variableType === 4 ?
+						<div style={{ marginTop: 20 }}>
+						<FormControl>
+							<InputLabel>File</InputLabel>
+							<Select
+								value={fileIdx}
+								label="File"
+								onChange={
+									(event: SelectChangeEvent) => {
+										console.log(event.target.value);
+										this.setState({
+											fileIdx: event.target.value
+										});
+									}
+								}
+							>
+								{
+									this.props.fileList.map((val, idx) => {
+										return <MenuItem key={idx} value={idx}>{val}</MenuItem>;
+									})
+								}
+							</Select>
+						</FormControl>
+						</div>
+						:
+						<div style={{ marginTop: 20 }}>
+							<TextField
+								label="Value"
+								multiline
+								rows={4}
+								value={textBoxValue}
+								onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+									this.setState({
+										textBoxValue: event.target.value,
+									});
+								}}
+								placeholder={`Put in your ${types[variableType]} here.`}
+							/>
+						</div>
+					}
 					<div style={{ marginTop: 20 }}>
 						<Button variant="outlined" onClick={() => {
 							this.setState({
 								open: true,
 							});
-							this.props.nodeSelected.setValueAndType(textBoxValue, types[variableType]);
+							if (variableType === 4) {
+								this.props.nodeSelected.setValueAndType(this.props.fileList[fileIdx], types[variableType]);
+							} else {
+								this.props.nodeSelected.setValueAndType(textBoxValue, types[variableType]);
+							}
 							// this.props.nodeSelected.addInPort('In2');
 						}}>Save</Button>
 					</div>

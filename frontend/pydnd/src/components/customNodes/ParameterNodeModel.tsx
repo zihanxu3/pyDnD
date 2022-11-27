@@ -20,6 +20,7 @@ export class ParameterNodeModel extends DefaultNodeModel {
 	functionInputs: string[];
 	functionOutputs: string[];
 	functionBody: string;
+	fileName: string;
 
 
     onDoubleClick: () => void;
@@ -33,6 +34,7 @@ export class ParameterNodeModel extends DefaultNodeModel {
 		this.type = '';
 		this.value = '';
 		this.mode = options.mode;
+		this.fileName = '';
 	}
 
 	getNodeMode(): string {
@@ -81,7 +83,7 @@ export class ParameterNodeModel extends DefaultNodeModel {
 	addAllInPorts() {
 		this.getInPorts().forEach(item => 
 			{	
-				if (item.getName() !== 'Exec In') this.removePort(item)
+				if (item.getName() !== 'Exec In') this.removePort(item);
 			});
 		var prev = '';
 		var counter = 0;
@@ -120,7 +122,7 @@ export class ParameterNodeModel extends DefaultNodeModel {
 			return {
 				...super.serialize(),
 				value: this.value,
-				type: this.type
+				type: this.type,
 			};
 		} else if (this.mode === 'function') {
 			return {

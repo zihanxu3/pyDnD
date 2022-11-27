@@ -1,11 +1,12 @@
 from flask import Flask, request
-import numpy as np
 from flask import jsonify
 from deserialize import Deserializer
 import redis
 from mkhash import make_hash
 import mongoClient
 import fileClient
+import shutil
+import os
 
 # from flask_cors import CORS, cross_origin
 
@@ -14,17 +15,21 @@ import fileClient
 # load_dotenv('.env')
 
 # For Redis
-myHostname = "pydnd-redis.redis.cache.windows.net"
-myPassword = "w1Zurj4HPPaLVVEPxG9MigbtvwneocVwiAzCaPNrLzc="
+myHostname = "pydnd-radis.redis.cache.windows.net"
+myPassword = "vBfeldP6TGp73ZWbYQdEuTUm7x2E6mHYjAzCaEJWQDs="
 
-r = redis.StrictRedis(host=myHostname, port=6380,
+r = redis.StrictRedis(host=myHostname, port=6380, db=0,
                       password=myPassword, ssl=True)
-
 
 app = Flask(__name__)
 
 # For Cosmos DB
 # app.config.from_pyfile('settings.py')
+
+local_path = './data'
+if os.path.exists(local_path):
+    shutil.rmtree(local_path)
+os.makedirs(local_path)
 
 @app.route("/")
 def hello():
@@ -33,11 +38,12 @@ def hello():
 
 @app.route('/compile', methods=['POST'])
 def compile():
-    reqJson = request.get_json()
-    hashing = make_hash(reqJson)
+    requestJson = request.get_json()
+    serialization, uid = requestJson['serialization'], requestJson['uid']
+    hashing = make_hash(serialization)
     if r.get(hashing) != None:
         return jsonify(r.get(hashing).decode('utf-8')), 200
-    deserializer = Deserializer(reqJson)
+    deserializer = Deserializer(serialization, uid, local_path)
     masterOutput = deserializer.linkNodes()
     print(masterOutput)
     ret = masterOutput
@@ -62,7 +68,7 @@ def listFiles():
     # fileName = file.filename
     uid = request.get_json()['uid']
     files = fileClient.listFilesInContainer(uid)
-    # fileClient.testDownloadFiles(uid)
+    print("here")
     return jsonify(files)
 
 @app.route('/signup', methods=['POST'])

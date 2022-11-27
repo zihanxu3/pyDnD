@@ -9,7 +9,6 @@ class ListStream:
         self.data = '> '
         self.seeEnd = False
     def write(self, s):
-        
         if s == '\n': 
             self.seeEnd = True
         elif self.seeEnd:

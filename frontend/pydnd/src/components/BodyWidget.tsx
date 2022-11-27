@@ -13,6 +13,7 @@ import { OutputWidget } from './OutputWidget';
 import { ParameterNodeModel } from './customNodes/ParameterNodeModel';
 import ModalDialogWidget from './ModalDialogWidget';
 import FileUploadSidebarWidget from './FileUploadSidebar';
+import { ThirtyFpsSelect } from '@mui/icons-material';
 
 export interface BodyWidgetProps {
 	app: Application;
@@ -66,6 +67,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			user: null,
 			fileList: [],
 		}
+
 		//3-A) create a default node
 		var node1 = new ParameterNodeModel({
 			mode: 'variable',
@@ -92,6 +94,24 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 		this.props.app.getDiagramEngine().getModel().addAll(node1, node2, link1);
 	}
 
+	getList = async () => {
+		let resp = await fetch('/listfiles', {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+			// mode: 'cors',
+			body: JSON.stringify({
+				uid: this.state.user['uid'],
+			})
+		});
+		let respJson = await resp.json();
+		console.log("getList gets called");
+		this.setState({
+			fileList: respJson,
+		});
+	}
 	render() {
 		console.log(this.props.app.getDiagramEngine().getModel().serialize());
 		const {
@@ -117,27 +137,9 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 								if (user === null) {
 									this.setState({formOpen: true});
 								} else {
-									let resp = await fetch('/listfiles', {
-										method: 'POST',
-										headers: {
-											'Accept': 'application/json',
-											'Content-Type': 'application/json'
-										},
-										// mode: 'cors',
-										body: JSON.stringify({
-											uid: user['uid'],
-										})
-									});
-									let respJson = await resp.json();
-
 									this.setState({
-										fileList: respJson,
-									}, () => {
-										this.setState({
-											myDriveOpen: true,
-										});
-									});
-									
+										myDriveOpen: true,
+									})
 								}
 							}}>
 								{user === null ? 'Sign Up' : user['firstName'] + ' ' + user['lastName']}
@@ -154,11 +156,14 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 												'Content-Type': 'application/json'
 											},
 											// mode: 'cors',
-											body: JSON.stringify(this.props.app.getDiagramEngine().getModel().serialize())
+											body: JSON.stringify({
+												serialization: this.props.app.getDiagramEngine().getModel().serialize(),
+												uid: user !== null ? user['uid'] : '',
+											})
 										});
 										let jsonResponse;
 										try {
-											jsonResponse = rawResponse.json();
+											jsonResponse = await rawResponse.json();
 										} catch (e) {
 											console.log(e)
 										}
@@ -248,11 +253,14 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 					</S.Main>
 					<SidebarWidget 
 						nodeSelected={nodeSelected} 
-						onClose={() => {this.setState({nodeSelected: null})}}/>
+						onClose={() => {this.setState({nodeSelected: null})}}
+						user={user}
+						fileList={this.state.fileList}/>
 					{myDriveOpen ? 
 					<FileUploadSidebarWidget 
 						uid={user === null ? '' : user['uid']}
 						fileList={this.state.fileList}
+						onUpload={this.getList}
 						onClose={() => {this.setState({myDriveOpen: false})}}/>
 					: <div></div>}
 					<ModalDialogWidget open={formOpen} handleClose={ () => {
@@ -260,7 +268,9 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 							formOpen: false,
 						})
 					}} setUser={(user) => {
-						this.setState({user: user});
+						this.setState({user: user}, async () => {
+							await this.getList();
+						});
 						console.log(user);
 					}}/>
 				</S.Content>

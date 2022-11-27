@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -32,7 +32,7 @@ namespace S {
 }
 
 
-const FileUploadSidebarWidget = ({ uid, fileList, onClose }) => {
+const FileUploadSidebarWidget = ({ uid, fileList, onUpload, onClose }) => {
     const [fileInput, setFileInput] = useState(null);
     const [open, setOpen] = useState(false);
     return (
@@ -73,8 +73,8 @@ const FileUploadSidebarWidget = ({ uid, fileList, onClose }) => {
                                 console.log(e)
                             }
                             setOpen(true);
+                            await onUpload();
                             console.log(jsonResponse);
-                            
                         }
                     }}>Save</Button>
                     <Snackbar

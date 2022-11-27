@@ -1,8 +1,10 @@
 import ast
 from execute import executeFunction
+import fileClient
 class Deserializer:
-    def __init__(self, jsonString):
+    def __init__(self, jsonString, uid, local_path=''):
         self.jsonString = jsonString
+        self.uid        = uid
         self.nodes      = jsonString['layers'][1]['models']
         self.links      = jsonString['layers'][0]['models']
         self.inputDict  = {}
@@ -13,6 +15,7 @@ class Deserializer:
         self.exit       = {}
         self.select     = {}
         self.print      = {}
+        self.local_path = local_path
         # print(self.nodes)
     def parseAllNodes(self):
         for k, v in self.nodes.items():
@@ -80,9 +83,15 @@ class Deserializer:
             for v in node['ports']:
                 if v['label'][0] == 'I':
                     # Input is array
-                    inputVals.append(
-                        ast.literal_eval(self.inputDict[self.linkDict[v['links'][0]]['source']]['value'])
-                    )
+                    if self.inputDict[self.linkDict[v['links'][0]]['source']]['type'] != 'file':
+                        inputVals.append(
+                            ast.literal_eval(self.inputDict[self.linkDict[v['links'][0]]['source']]['value'])
+                        )
+                    else:
+                        fileName = self.inputDict[self.linkDict[v['links'][0]]['source']]['value']
+                        inputVals.append(
+                            fileClient.downloadFileWithName(uid=self.uid, fileName=fileName, local_path=self.local_path)
+                        )
                 elif v['label'][0] == 'O':
                     # Output is array of array
                     outputLinks.append(v['links'])
