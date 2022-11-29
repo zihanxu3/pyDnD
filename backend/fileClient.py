@@ -2,6 +2,8 @@ import os
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 import shutil
+from dotenv import load_dotenv
+load_dotenv('.env')
 
 AZURE_STORAGE_CONNECTION_STRING = os.environ.get('AZURE_STORAGE_CONNECTION_STRING')
 blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
@@ -28,7 +30,11 @@ def listFilesInContainer(uid):
     print(res)
     return res 
 
-def downloadFileWithName(uid, fileName, local_path):
+def downloadFileWithName(uid, fileName):
+    local_path = './data'
+    if os.path.exists(local_path):
+        shutil.rmtree(local_path)
+    os.makedirs(local_path)
     download_file_path = os.path.join(local_path, fileName)
     print(download_file_path, fileName, uid)
     container_client = blob_service_client.get_blob_client(container=uid,blob=fileName) 

@@ -39,7 +39,8 @@ namespace S {
 		text-align: center;
 	`;
 }
-var types = ['number', 'list', 'dict', 'set'];
+var types = ['value', 'list', 'dict', 'set'];
+var functionTypes = ['GetTags - from URL', 'GetDescription - from URL']
 
 export class SidebarWidget extends React.Component<any, any> {
 	constructor(props) {
@@ -52,6 +53,7 @@ export class SidebarWidget extends React.Component<any, any> {
 			functionOutputs: '',
 			functionBody: '',
 			open: false,
+			cvType: 0,
 		}
 		console.log("constructed");
 	}
@@ -66,8 +68,10 @@ export class SidebarWidget extends React.Component<any, any> {
 				functionOutputs: this.props.nodeSelected === null ? '' : this.props.nodeSelected.getFuntionOutputs(),
 				functionBody: this.props.nodeSelected === null ? '' : this.props.nodeSelected.getFuntionBody(),
 				open: false,
+				cvType: this.props.nodeSelected === null || this.props.nodeSelected.getCVFunction() === '' ? 0 : functionTypes.indexOf(this.props.nodeSelected.getCVFunction()),
 			});
 			if (this.props.user !== null && types.length <= 4) types = [...types, 'file'];
+			if (this.props.user !== null && functionTypes.length <= 2) functionTypes = [...functionTypes, 'GetTags - from File', 'GetDescription - from File'];
 		}
 	}
 	render() {
@@ -79,6 +83,7 @@ export class SidebarWidget extends React.Component<any, any> {
 			functionOutputs,
 			functionBody,
 			open,
+			cvType,
 		} = this.state;
 		let content;
 		if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'variable') {
@@ -186,7 +191,7 @@ export class SidebarWidget extends React.Component<any, any> {
 									functionInputs: event.target.value,
 								});
 							}}
-							placeholder='Put in your function input types here, in order, separated by commas. E.g. number,number,list. If void, put nothing.'
+							placeholder='Put in your function input types here, in order, separated by commas. E.g. int,string,dict,list. If void, put nothing.'
 						/>
 					</div>
 					<div style={{ marginTop: 20 }}>
@@ -249,7 +254,53 @@ export class SidebarWidget extends React.Component<any, any> {
 					</Snackbar>
 				</div>
 		} else if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'output') {
-			<p></p>;
+			<p></p>; 
+		} else if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'cv') {
+			content =
+				<div>
+					<div>
+						<FormControl>
+							<InputLabel>CV Function</InputLabel>
+							<Select
+								value={cvType}
+								label="CV Function"
+								onChange={
+									(event: SelectChangeEvent) => {
+										console.log(event.target.value);
+										this.setState({
+											cvType: event.target.value
+										});
+									}
+								}
+							>
+								{functionTypes.map((val, idx) => {
+									return <MenuItem key={idx} value={idx}>{val}</MenuItem>;
+								})}
+							</Select>
+						</FormControl>
+					</div>
+					<div style={{ marginTop: 20 }}>
+						<Button variant="outlined" onClick={() => {
+							this.props.nodeSelected.setCVFunction(functionTypes[cvType]);
+							this.setState({
+								open: true,
+							});
+						}}>Save</Button>
+					</div>
+					<Snackbar
+						open={open}
+						autoHideDuration={2000}
+						onClose={() => { this.setState({ open: false }) }}
+					>
+						<Alert
+							onClose={() => { this.setState({ open: false }) }}
+							severity="success"
+							sx={{ width: '100%' }}
+						>
+							Saved Successfully!
+						</Alert>
+					</Snackbar>
+				</div>;
 		}
 
 		return <S.RightTray style={{ display: this.props.nodeSelected !== null ? 'block' : 'none' }}>

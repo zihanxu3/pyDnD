@@ -3,6 +3,8 @@ import sys
 # from app import app
 import hashlib
 import pymongo
+from dotenv import load_dotenv
+load_dotenv('.env')
 
 DB_NAME = 'userdb'
 USER_COLLECTION = "users"

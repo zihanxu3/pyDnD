@@ -5,14 +5,10 @@ import redis
 from mkhash import make_hash
 import mongoClient
 import fileClient
-import shutil
-import os
+import cognitiveClient
+
 
 # from flask_cors import CORS, cross_origin
-
-# from dotenv import load_dotenv
-
-# load_dotenv('.env')
 
 # For Redis
 myHostname = "pydnd-radis.redis.cache.windows.net"
@@ -26,10 +22,6 @@ app = Flask(__name__)
 # For Cosmos DB
 # app.config.from_pyfile('settings.py')
 
-local_path = './data'
-if os.path.exists(local_path):
-    shutil.rmtree(local_path)
-os.makedirs(local_path)
 
 @app.route("/")
 def hello():
@@ -43,13 +35,14 @@ def compile():
     hashing = make_hash(serialization)
     if r.get(hashing) != None:
         return jsonify(r.get(hashing).decode('utf-8')), 200
-    deserializer = Deserializer(serialization, uid, local_path)
+    deserializer = Deserializer(serialization, uid)
     masterOutput = deserializer.linkNodes()
     print(masterOutput)
     ret = masterOutput
     # for i in masterOutput:
     #     ret += '> ' + str(i) + '\n'
-    
+    # print(cognitiveClient.getTagsOfImage('https://media.npr.org/assets/img/2021/11/10/white-tailed-deer-1-ac07593f0b38e66ffac9178fb0c787ca75baea3d-s1100-c50.jpg'))
+    # print(cognitiveClient.getTextDescriptionOfImage('https://media.npr.org/assets/img/2021/11/10/white-tailed-deer-1-ac07593f0b38e66ffac9178fb0c787ca75baea3d-s1100-c50.jpg'))
     r.set(hashing, bytes(ret, 'utf-8'))
     return jsonify(ret)
 

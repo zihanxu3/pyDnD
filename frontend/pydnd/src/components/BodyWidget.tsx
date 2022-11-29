@@ -122,6 +122,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			myDriveOpen,
 			user,
 		} = this.state;
+
 		const doubleClickNode = (node) => {
 			this.setState({
 				nodeSelected: node
@@ -181,11 +182,14 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 				</S.Header>
 				<S.Content>
 					<TrayWidget>
+						<p style={{color: 'white'}}> Python Exec Blocks </p> 
                         <TrayItemWidget model={{ type: 'param' }} name="Parameter" color="rgb(0,192,255)" />
 						<TrayItemWidget model={{ type: 'output' }} name="Output" color="rgb(192,255,0)" />
 						<TrayItemWidget model={{ type: 'function' }} name="Function" color="rgb(192,0,255)" />
 						<TrayItemWidget model={{ type: 'return' }} name="Return" color="rgb(112,128,144)" />
 						<TrayItemWidget model={{ type: 'print' }} name="Print" color="rgb(224, 203, 81)" />
+						<p style={{color: 'white', marginTop: '30px'}}> Deep Learning Blocks </p> 
+						<TrayItemWidget model={{ type: 'cv' }} name="Computer Vision" color="rgb(144, 172, 224)" />
 					</TrayWidget>
 					<S.Main>
 					<S.Layer
@@ -231,6 +235,18 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 							} else if (data.type === 'print') {
 								node = new DefaultNodeModel({name: 'Print', color: 'rgb(224, 203, 81)'});
 								node.addInPort('Exec In');
+							} else if (data.type === 'cv') {
+								node = new ParameterNodeModel({
+									mode: 'cv',
+									name: 'Computer Vision', 
+									color: 'rgb(144, 172, 224)',
+									onDoubleClick: () => { 
+										doubleClickNode(node);
+									} });
+								node.addInPort('Exec In');
+								node.addInPort('Image');
+								node.addOutPort('Exec Out');
+								node.addOutPort('Output');
 							}
 							var point = this.props.app.getDiagramEngine().getRelativeMousePoint(event);
 							node.setPosition(point);
