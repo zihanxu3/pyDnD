@@ -6,6 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 namespace S {
 	export const Tray = styled.div`
 		min-width: 200px;
+        max-width: 85vw;
         height: 200px;
 		background: rgb(20, 20, 20);
 		flex-grow: 0;
@@ -13,7 +14,7 @@ namespace S {
         margin-top: auto;
         color: white;
         padding-left: 20px;
-        overflow-y:auto
+        overflow-y: scroll;
         flex-direction: row;
 	`;
 }

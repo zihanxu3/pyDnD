@@ -1,12 +1,27 @@
 from flask import Flask, request
-import numpy as np
 from flask import jsonify
 from deserialize import Deserializer
+import redis
+from mkhash import make_hash
+import mongoClient
+import fileClient
+import cognitiveClient
 
+
+# from flask_cors import CORS, cross_origin
+
+# For Redis
+myHostname = "pydnd-radis.redis.cache.windows.net"
+myPassword = "vBfeldP6TGp73ZWbYQdEuTUm7x2E6mHYjAzCaEJWQDs="
+
+r = redis.StrictRedis(host=myHostname, port=6380, db=0,
+                      password=myPassword, ssl=True)
 
 app = Flask(__name__)
 
-application = app
+# For Cosmos DB
+# app.config.from_pyfile('settings.py')
+
 
 @app.route("/")
 def hello():
@@ -15,10 +30,54 @@ def hello():
 
 @app.route('/compile', methods=['POST'])
 def compile():
-    deserializer = Deserializer(request.get_json())
+    requestJson = request.get_json()
+    serialization, uid = requestJson['serialization'], requestJson['uid']
+    hashing = make_hash(serialization)
+    if r.get(hashing) != None:
+        return jsonify(r.get(hashing).decode('utf-8')), 200
+    deserializer = Deserializer(serialization, uid)
     masterOutput = deserializer.linkNodes()
-    ret = ''
-    for i in masterOutput:
-        ret += '> ' + str(i) + '\n'
+    print(masterOutput)
+    ret = masterOutput
+    # for i in masterOutput:
+    #     ret += '> ' + str(i) + '\n'
+    # print(cognitiveClient.getTagsOfImage('https://media.npr.org/assets/img/2021/11/10/white-tailed-deer-1-ac07593f0b38e66ffac9178fb0c787ca75baea3d-s1100-c50.jpg'))
+    # print(cognitiveClient.getTextDescriptionOfImage('https://media.npr.org/assets/img/2021/11/10/white-tailed-deer-1-ac07593f0b38e66ffac9178fb0c787ca75baea3d-s1100-c50.jpg'))
+    r.set(hashing, bytes(ret, 'utf-8'))
+    return jsonify(ret)
 
-    return jsonify(ret), 200
+@app.route('/upload', methods=['POST'])
+def fileUpload():
+    file = request.files['file']
+    # fileName = file.filename
+    uid = request.form['uid']
+    fileClient.uploadFile(file, uid)
+    # fileClient.testDownloadFiles(uid)
+    return {1: 'successfully upload'}
+
+@app.route('/listfiles', methods=['POST'])
+def listFiles():
+    # file = request.files['file']
+    # fileName = file.filename
+    uid = request.get_json()['uid']
+    files = fileClient.listFilesInContainer(uid)
+    print("here")
+    return jsonify(files)
+
+@app.route('/signup', methods=['POST'])
+def signUp():
+    form = request.get_json()
+    
+    status, body = mongoClient.createUser(form['firstName'], form['lastName'], form['email'], form['password'])
+    print(body)
+    return {'stat': status, 'body': body}
+
+@app.route('/signin', methods=['POST'])
+def signIn():
+    form = request.get_json()
+    status, body = mongoClient.authUser(form['email'], form['password'])
+    print(body)
+    print(jsonify(body))
+    return {'stat': status, 'body': body}
+
+# CORS(app, expose_headers='Authorization')

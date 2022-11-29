@@ -11,6 +11,9 @@ import Button from '@mui/material/Button';
 import { SidebarWidget } from './SidebarWidget';
 import { OutputWidget } from './OutputWidget';
 import { ParameterNodeModel } from './customNodes/ParameterNodeModel';
+import ModalDialogWidget from './ModalDialogWidget';
+import FileUploadSidebarWidget from './FileUploadSidebar';
+import { ThirtyFpsSelect } from '@mui/icons-material';
 
 export interface BodyWidgetProps {
 	app: Application;
@@ -43,6 +46,7 @@ namespace S {
 	export const Content = styled.div`
 		display: flex;
 		flex-grow: 1;
+		max-width: 100vw;
 	`;
 
 	export const Layer = styled.div`
@@ -59,7 +63,12 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			nodeSelected: null,
 			consoleOutput: '',
 			consoleOpen: false,
+			formOpen: false,
+			myDriveOpen: false,
+			user: null,
+			fileList: [],
 		}
+
 		//3-A) create a default node
 		var node1 = new ParameterNodeModel({
 			mode: 'variable',
@@ -83,17 +92,38 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 
 		// link the ports
 		let link1 = port.link(port2);
-
 		this.props.app.getDiagramEngine().getModel().addAll(node1, node2, link1);
 	}
 
+	getList = async () => {
+		let resp = await fetch('/listfiles', {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+			// mode: 'cors',
+			body: JSON.stringify({
+				uid: this.state.user['uid'],
+			})
+		});
+		let respJson = await resp.json();
+		console.log("getList gets called");
+		this.setState({
+			fileList: respJson,
+		});
+	}
 	render() {
 		console.log(this.props.app.getDiagramEngine().getModel().serialize());
 		const {
 			nodeSelected,
 			consoleOutput,
 			consoleOpen,
+			formOpen,
+			myDriveOpen,
+			user,
 		} = this.state;
+
 		const doubleClickNode = (node) => {
 			this.setState({
 				nodeSelected: node
@@ -103,43 +133,64 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			<S.Body>
 				<S.Header>
 					<div className="title">CS 5412 PyDnD Project</div>
-					<div style={{marginLeft: 'auto'}}>
-						<Button variant="outlined" onClick={
-								async () => {
-									// https://pydnd-azure-backend-xyz.azurewebsites.net/compile
-									const rawResponse = await fetch('/compile', {
-										method: 'POST',
-										headers: {
-											'Accept': 'application/json',
-											'Content-Type': 'application/json'
-										},
-										// mode: 'cors',
-										body: JSON.stringify(this.props.app.getDiagramEngine().getModel().serialize())
-									});
-									let jsonResponse;
-									try {
-										jsonResponse = await rawResponse.json();
-									} catch (e) {
-										console.log(e)
-									}
-									console.log(jsonResponse);
+					<div style={{marginLeft: 'auto', display: 'flex', flexDirection: 'row'}}>
+						<div style={{marginRight: "10px"}} >
+							<Button variant="outlined" onClick={async () => {
+								if (user === null) {
+									this.setState({formOpen: true});
+								} else {
 									this.setState({
-										consoleOutput: jsonResponse,
-										consoleOpen: true,
-									});
+										myDriveOpen: true,
+									})
 								}
-							}>
-							Run
-						</Button>
+							}}>
+								{user === null ? 'Sign Up' : user['firstName'] + ' ' + user['lastName']}
+							</Button>
+						</div>
+						<div>
+							<Button variant="outlined" onClick={
+									async () => {
+										// https://pydnd-azure-backend-xyz.azurewebsites.net/compile
+										const rawResponse = await fetch('/compile', {
+											method: 'POST',
+											headers: {
+												'Accept': 'application/json',
+												'Content-Type': 'application/json'
+											},
+											// mode: 'cors',
+											body: JSON.stringify({
+												serialization: this.props.app.getDiagramEngine().getModel().serialize(),
+												uid: user !== null ? user['uid'] : '',
+											})
+										});
+										let jsonResponse;
+										try {
+											jsonResponse = await rawResponse.json();
+										} catch (e) {
+											console.log(e)
+										}
+										console.log(jsonResponse);
+										this.setState({
+											consoleOutput: jsonResponse,
+											consoleOpen: true,
+										});
+									}
+								}>
+								Run
+							</Button>
+						</div>
 					</div>
 				</S.Header>
 				<S.Content>
 					<TrayWidget>
+						<p style={{color: 'white'}}> Python Exec Blocks </p> 
                         <TrayItemWidget model={{ type: 'param' }} name="Parameter" color="rgb(0,192,255)" />
 						<TrayItemWidget model={{ type: 'output' }} name="Output" color="rgb(192,255,0)" />
 						<TrayItemWidget model={{ type: 'function' }} name="Function" color="rgb(192,0,255)" />
 						<TrayItemWidget model={{ type: 'return' }} name="Return" color="rgb(112,128,144)" />
 						<TrayItemWidget model={{ type: 'print' }} name="Print" color="rgb(224, 203, 81)" />
+						<p style={{color: 'white', marginTop: '30px'}}> Deep Learning Blocks </p> 
+						<TrayItemWidget model={{ type: 'cv' }} name="Computer Vision" color="rgb(144, 172, 224)" />
 					</TrayWidget>
 					<S.Main>
 					<S.Layer
@@ -185,6 +236,18 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 							} else if (data.type === 'print') {
 								node = new DefaultNodeModel({name: 'Print', color: 'rgb(224, 203, 81)'});
 								node.addInPort('Exec In');
+							} else if (data.type === 'cv') {
+								node = new ParameterNodeModel({
+									mode: 'cv',
+									name: 'Computer Vision', 
+									color: 'rgb(144, 172, 224)',
+									onDoubleClick: () => { 
+										doubleClickNode(node);
+									} });
+								node.addInPort('Exec In');
+								node.addInPort('Image');
+								node.addOutPort('Exec Out');
+								node.addOutPort('Output');
 							}
 							var point = this.props.app.getDiagramEngine().getRelativeMousePoint(event);
 							node.setPosition(point);
@@ -207,7 +270,26 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 					</S.Main>
 					<SidebarWidget 
 						nodeSelected={nodeSelected} 
-						onClose={() => {this.setState({nodeSelected: null})}}/>
+						onClose={() => {this.setState({nodeSelected: null})}}
+						user={user}
+						fileList={this.state.fileList}/>
+					{myDriveOpen ? 
+					<FileUploadSidebarWidget 
+						uid={user === null ? '' : user['uid']}
+						fileList={this.state.fileList}
+						onUpload={this.getList}
+						onClose={() => {this.setState({myDriveOpen: false})}}/>
+					: <div></div>}
+					<ModalDialogWidget open={formOpen} handleClose={ () => {
+						this.setState({
+							formOpen: false,
+						})
+					}} setUser={(user) => {
+						this.setState({user: user}, async () => {
+							await this.getList();
+						});
+						console.log(user);
+					}}/>
 				</S.Content>
 			</S.Body>
 		);

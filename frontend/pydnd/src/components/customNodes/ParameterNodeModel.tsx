@@ -20,6 +20,10 @@ export class ParameterNodeModel extends DefaultNodeModel {
 	functionInputs: string[];
 	functionOutputs: string[];
 	functionBody: string;
+	fileName: string;
+
+	// For cv nodes
+	cvFunction: string;
 
 
     onDoubleClick: () => void;
@@ -33,6 +37,8 @@ export class ParameterNodeModel extends DefaultNodeModel {
 		this.type = '';
 		this.value = '';
 		this.mode = options.mode;
+		this.fileName = '';
+		this.cvFunction = '';
 	}
 
 	getNodeMode(): string {
@@ -61,6 +67,10 @@ export class ParameterNodeModel extends DefaultNodeModel {
 		return this.functionBody;
 	}
 
+	getCVFunction(): string {
+		return this.cvFunction;
+	}
+
     setValueAndType(value: string, type: string): void {
         this.value = value;
 		this.type = type;
@@ -78,10 +88,14 @@ export class ParameterNodeModel extends DefaultNodeModel {
 		this.functionBody = functionBody;
 	}
 
+	setCVFunction(cvFunction: string): void {
+		this.cvFunction = cvFunction;
+	}
+
 	addAllInPorts() {
 		this.getInPorts().forEach(item => 
 			{	
-				if (item.getName() !== 'Exec In') this.removePort(item)
+				if (item.getName() !== 'Exec In') this.removePort(item);
 			});
 		var prev = '';
 		var counter = 0;
@@ -120,7 +134,7 @@ export class ParameterNodeModel extends DefaultNodeModel {
 			return {
 				...super.serialize(),
 				value: this.value,
-				type: this.type
+				type: this.type,
 			};
 		} else if (this.mode === 'function') {
 			return {
@@ -132,8 +146,13 @@ export class ParameterNodeModel extends DefaultNodeModel {
 		} else if (this.mode === 'output') {
 			return {
 				...super.serialize(),
-			}
-		}
+			};
+		} else if (this.mode === 'cv') {
+			return {
+				...super.serialize(),
+				cvFunction: this.cvFunction,
+			};
+		}	
 	}
 
 	deserialize(event): void {
@@ -141,10 +160,12 @@ export class ParameterNodeModel extends DefaultNodeModel {
 		if (event.data.mode === 'variable') {
 			this.value = event.data.value;
 			this.type = event.data.type;
-		} else if ( event.data.mode === 'function') {
+		} else if (event.data.mode === 'function') {
 			this.functionInputs = event.data.functionInputs;
 			this.functionOutputs = event.data.functionInputs;
 			this.functionBody = event.data.functionBody;
+		} else if (event.data.mode === 'cv') {
+			this.cvFunction = event.data.cvFunction;
 		}
 	}
 }
