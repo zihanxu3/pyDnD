@@ -1,5 +1,4 @@
 # Write your function below
-def printLines(fileObj):
+def func(fileObj):
     for i in fileObj:
         print(i)
-    return

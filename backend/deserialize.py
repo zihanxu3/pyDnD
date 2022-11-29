@@ -72,7 +72,7 @@ class Deserializer:
     def linkNodes(self):
         self.parseAllLinks()
         self.parseAllNodes() 
-        masterOutput = ['']
+        masterOutput = ['', '']
         nodes = [self.entry]
         def appendOutPortNodes(node): 
             for v in node['ports']:
@@ -104,9 +104,11 @@ class Deserializer:
                     outputLinks.append(v['links'])
             outputs, prints = executeFunction(functionBody=funtionBody, functionArgs=inputVals)
             # Ignore linking function for now and return directly 
+            masterOutput[0] += '>>> PRINT VALUES <<<: ' + '\n'
             masterOutput[0] += prints
+            masterOutput[1] += '>>> RETURN VALUES <<<: ' + '\n'
             for i in outputs: 
-                masterOutput[0] += '> ' + str(i) + '\n'
+                masterOutput[1] += '> ' + str(i) + '\n'
             # masterOutput.extend(outputs)
         
         def parseCVNode(node):
@@ -131,7 +133,7 @@ class Deserializer:
                 elif v['name'] == 'Output':
                     outputLink = v['links']
             
-            masterOutput[0] += outputVal
+            masterOutput[1] += outputVal
             return            
 
 
@@ -145,7 +147,7 @@ class Deserializer:
             elif (front['name'] == 'Computer Vision'):
                 parseCVNode(front)
             appendOutPortNodes(front)
-        return masterOutput[0]
+        return '\n'.join(masterOutput)
 
 
 

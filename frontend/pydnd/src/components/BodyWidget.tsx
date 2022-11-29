@@ -46,6 +46,7 @@ namespace S {
 	export const Content = styled.div`
 		display: flex;
 		flex-grow: 1;
+		max-width: 100vw;
 	`;
 
 	export const Layer = styled.div`
