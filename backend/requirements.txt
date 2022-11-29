@@ -5,3 +5,5 @@ python-dotenv
 azure-storage-blob 
 azure-identity
 azure-cognitiveservices-vision-computervision
+opencv-python
+opencv-python-headless

@@ -72,7 +72,8 @@ class Deserializer:
     def linkNodes(self):
         self.parseAllLinks()
         self.parseAllNodes() 
-        masterOutput = ['', '']
+        masterOutput = ['>>> PRINT VALUES <<<: \n', '>>> RETURN VALUES <<<: \n']
+        imageData = [None]
         nodes = [self.entry]
         def appendOutPortNodes(node): 
             for v in node['ports']:
@@ -104,9 +105,7 @@ class Deserializer:
                     outputLinks.append(v['links'])
             outputs, prints = executeFunction(functionBody=funtionBody, functionArgs=inputVals)
             # Ignore linking function for now and return directly 
-            masterOutput[0] += '>>> PRINT VALUES <<<: ' + '\n'
             masterOutput[0] += prints
-            masterOutput[1] += '>>> RETURN VALUES <<<: ' + '\n'
             for i in outputs: 
                 masterOutput[1] += '> ' + str(i) + '\n'
             # masterOutput.extend(outputs)
@@ -124,10 +123,16 @@ class Deserializer:
                     elif functionType == 'GetDescription - from URL':
                         inputVal = ast.literal_eval(self.inputDict[self.linkDict[v['links'][0]]['source']]['value'])
                         outputVal = cognitiveClient.getTextDescriptionOfImage(inputVal)
+                    elif functionType == 'GetText - from URL':
+                        inputVal = ast.literal_eval(self.inputDict[self.linkDict[v['links'][0]]['source']]['value'])
+                        outputVal, imageData[0] = cognitiveClient.getTextOfImage(inputVal)
+                    elif functionType == 'GetText - from File':
+                        inputVal = self.inputDict[self.linkDict[v['links'][0]]['source']]['value']
+                        outputVal, imageData[0] = cognitiveClient.getTextOfImageFromFile(self.uid, inputVal)
                     elif functionType == 'GetTags - from File':
                         inputVal = self.inputDict[self.linkDict[v['links'][0]]['source']]['value']
                         outputVal = cognitiveClient.getTagsOfImageFromFile(self.uid, inputVal)
-                    else:
+                    elif functionType == 'GetDescription - from File':
                         inputVal = self.inputDict[self.linkDict[v['links'][0]]['source']]['value']
                         outputVal = cognitiveClient.getTextDescriptionOfImageFromFile(self.uid, inputVal)
                 elif v['name'] == 'Output':
@@ -147,7 +152,7 @@ class Deserializer:
             elif (front['name'] == 'Computer Vision'):
                 parseCVNode(front)
             appendOutPortNodes(front)
-        return '\n'.join(masterOutput)
+        return '\n'.join(masterOutput), imageData[0]
 
 
 

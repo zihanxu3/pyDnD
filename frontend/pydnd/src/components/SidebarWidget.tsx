@@ -40,7 +40,7 @@ namespace S {
 	`;
 }
 var types = ['value', 'list', 'dict', 'set'];
-var functionTypes = ['GetTags - from URL', 'GetDescription - from URL']
+var functionTypes = ['GetTags - from URL', 'GetDescription - from URL', 'GetText - from URL']
 
 export class SidebarWidget extends React.Component<any, any> {
 	constructor(props) {
@@ -71,7 +71,7 @@ export class SidebarWidget extends React.Component<any, any> {
 				cvType: this.props.nodeSelected === null || this.props.nodeSelected.getCVFunction() === '' ? 0 : functionTypes.indexOf(this.props.nodeSelected.getCVFunction()),
 			});
 			if (this.props.user !== null && types.length <= 4) types = [...types, 'file'];
-			if (this.props.user !== null && functionTypes.length <= 2) functionTypes = [...functionTypes, 'GetTags - from File', 'GetDescription - from File'];
+			if (this.props.user !== null && functionTypes.length <= 3) functionTypes = [...functionTypes, 'GetTags - from File', 'GetDescription - from File', 'GetText - from File'];
 		}
 	}
 	render() {

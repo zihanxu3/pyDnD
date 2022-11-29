@@ -152,6 +152,16 @@ export class ParameterNodeModel extends DefaultNodeModel {
 				...super.serialize(),
 				cvFunction: this.cvFunction,
 			};
+		} else if (this.mode === 'nlp') {
+			return {
+				...super.serialize(),
+				// cvFunction: this.cvFunction,
+			};
+		} else if (this.mode === 'face') {
+			return {
+				...super.serialize(),
+				// cvFunction: this.cvFunction,
+			};
 		}	
 	}
 
@@ -166,6 +176,8 @@ export class ParameterNodeModel extends DefaultNodeModel {
 			this.functionBody = event.data.functionBody;
 		} else if (event.data.mode === 'cv') {
 			this.cvFunction = event.data.cvFunction;
-		}
+		} else if (event.data.mode === 'nlp') { 
+
+		} else if (event.data.mode === 'face') { }
 	}
 }
