@@ -38,6 +38,7 @@ def compile():
     deserializer = Deserializer(serialization, uid)
     masterOutput, data = deserializer.linkNodes()
     print(masterOutput)
+    print(cognitiveClient.getFaceDetection())
     # print(cognitiveClient.getTextOfImage('https://i.pinimg.com/originals/a8/1c/14/a81c14ce2a72f996fc473f09b126725f.jpg'))
     ret = masterOutput
     # for i in masterOutput:

@@ -30,6 +30,7 @@ if USER_COLLECTION not in db.list_collection_names():
     indexes = [
         {"key": {"_id": 1}, "name": "_id_1", "unique": True},
         {"key": {"uid": 2}, "name": "_id_2", "unique": True},
+        {"key": {"email": 3}, "email": "_id_3", "unique": True},
     ]
     db.command(
         {
