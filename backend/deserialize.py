@@ -11,6 +11,7 @@ class Deserializer:
         self.inputDict  = {}
         self.funcDict   = {}
         self.cvDict     = {}
+        self.nlpDict    = {}
         self.outputDict = {}
         self.linkDict   = {}
         self.entry      = {}
@@ -41,6 +42,12 @@ class Deserializer:
                     'cvFunction': v['cvFunction'],
                     'ports': v['ports']
                 }
+            elif v['name'] == 'Natural Language Processing':
+                self.nlpDict[k] = {
+                    'name': v['name'], 
+                    'nlpFunction': v['nlpFunction'],
+                    'ports': v['ports']
+                }
             elif v['name'] == 'Output':
                 self.outputDict[k] = {v['name']}
             elif v['name'] == 'Return':
@@ -59,7 +66,7 @@ class Deserializer:
                     'name': v['name'], 
                     'ports': v['ports']
                 }
-        self.select = {'Function': self.funcDict, 'Return': self.exit, 'Computer Vision': self.cvDict}
+        self.select = {'Function': self.funcDict, 'Return': self.exit, 'Computer Vision': self.cvDict, 'Natural Language Processing': self.nlpDict}
     def parseAllLinks(self):
         for k, v in self.links.items():
             self.linkDict[k] = {
@@ -139,6 +146,37 @@ class Deserializer:
                     outputLink = v['links']
             
             masterOutput[1] += outputVal
+            return
+
+        def parseNLPNode(node):
+            functionType = node['nlpFunction']
+            inputVal, outputVal = None, None
+            outputLink = None
+            ['GetSentiment - from List', 'GetSummarization - from List', 'GetKeyPhrase - from List']
+            for v in node['ports']:
+                if v['name'] == 'Text':
+                    if functionType == 'GetSentiment - from List':
+                        inputVal = ast.literal_eval(self.inputDict[self.linkDict[v['links'][0]]['source']]['value'])
+                        outputVal = cognitiveClient.getSentimentOfList(inputVal)
+                    elif functionType == 'GetSummarization - from List':
+                        inputVal = ast.literal_eval(self.inputDict[self.linkDict[v['links'][0]]['source']]['value'])
+                        outputVal = cognitiveClient.getExtractiveSummarizationOfList(inputVal)
+                    elif functionType == 'GetKeyPhrase - from List':
+                        inputVal = ast.literal_eval(self.inputDict[self.linkDict[v['links'][0]]['source']]['value'])
+                        outputVal = cognitiveClient.getKeyPhraseFromList(inputVal)
+                    elif functionType == 'GetSentiment - from File':
+                        inputVal = self.inputDict[self.linkDict[v['links'][0]]['source']]['value']
+                        outputVal = cognitiveClient.getSentimentOfFile(self.uid, inputVal)
+                    elif functionType == 'GetSummarization - from File':
+                        inputVal = self.inputDict[self.linkDict[v['links'][0]]['source']]['value']
+                        outputVal = cognitiveClient.getExtractiveSummarizationOfFile(self.uid, inputVal)
+                    elif functionType == 'GetKeyPhrase - from File':
+                        inputVal = self.inputDict[self.linkDict[v['links'][0]]['source']]['value']
+                        outputVal = cognitiveClient.getKeyPhraseFromFile(self.uid, inputVal)
+                elif v['name'] == 'Output':
+                    outputLink = v['links']
+            
+            masterOutput[1] += outputVal
             return            
 
 
@@ -151,6 +189,8 @@ class Deserializer:
                 parseFunctionNode(front)
             elif (front['name'] == 'Computer Vision'):
                 parseCVNode(front)
+            elif (front['name'] == 'Natural Language Processing'):
+                parseNLPNode(front)
             appendOutPortNodes(front)
         return '\n'.join(masterOutput), imageData[0]
 

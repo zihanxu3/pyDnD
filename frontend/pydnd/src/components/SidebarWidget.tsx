@@ -41,6 +41,7 @@ namespace S {
 }
 var types = ['value', 'list', 'dict', 'set'];
 var functionTypes = ['GetTags - from URL', 'GetDescription - from URL', 'GetText - from URL']
+var languageTypes = ['GetSentiment - from List', 'GetSummarization - from List', 'GetKeyPhrase - from List']
 
 export class SidebarWidget extends React.Component<any, any> {
 	constructor(props) {
@@ -54,6 +55,7 @@ export class SidebarWidget extends React.Component<any, any> {
 			functionBody: '',
 			open: false,
 			cvType: 0,
+			nlpType: 0,
 		}
 		console.log("constructed");
 	}
@@ -72,6 +74,7 @@ export class SidebarWidget extends React.Component<any, any> {
 			});
 			if (this.props.user !== null && types.length <= 4) types = [...types, 'file'];
 			if (this.props.user !== null && functionTypes.length <= 3) functionTypes = [...functionTypes, 'GetTags - from File', 'GetDescription - from File', 'GetText - from File'];
+			if (this.props.user !== null && languageTypes.length <= 3) languageTypes = [...languageTypes, 'GetSentiment - from File', 'GetSummarization - from File', 'GetKeyPhrase - from File'];
 		}
 	}
 	render() {
@@ -84,6 +87,7 @@ export class SidebarWidget extends React.Component<any, any> {
 			functionBody,
 			open,
 			cvType,
+			nlpType,
 		} = this.state;
 		let content;
 		if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'variable') {
@@ -282,6 +286,52 @@ export class SidebarWidget extends React.Component<any, any> {
 					<div style={{ marginTop: 20 }}>
 						<Button variant="outlined" onClick={() => {
 							this.props.nodeSelected.setCVFunction(functionTypes[cvType]);
+							this.setState({
+								open: true,
+							});
+						}}>Save</Button>
+					</div>
+					<Snackbar
+						open={open}
+						autoHideDuration={2000}
+						onClose={() => { this.setState({ open: false }) }}
+					>
+						<Alert
+							onClose={() => { this.setState({ open: false }) }}
+							severity="success"
+							sx={{ width: '100%' }}
+						>
+							Saved Successfully!
+						</Alert>
+					</Snackbar>
+				</div>;
+		} else if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'nlp') {
+			content =
+				<div>
+					<div>
+						<FormControl>
+							<InputLabel>NLP Function</InputLabel>
+							<Select
+								value={nlpType}
+								label="NLP Function"
+								onChange={
+									(event: SelectChangeEvent) => {
+										console.log(event.target.value);
+										this.setState({
+											nlpType: event.target.value
+										});
+									}
+								}
+							>
+								{languageTypes.map((val, idx) => {
+									return <MenuItem key={idx} value={idx}>{val}</MenuItem>;
+								})}
+							</Select>
+						</FormControl>
+					</div>
+					<div style={{ marginTop: 20 }}>
+						<Button variant="outlined" onClick={() => {
+							this.props.nodeSelected.setNLPFunction(languageTypes[nlpType]);
 							this.setState({
 								open: true,
 							});

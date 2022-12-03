@@ -207,7 +207,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 						<p style={{ color: 'white', marginTop: '30px' }}> Deep Learning Blocks </p>
 						<TrayItemWidget model={{ type: 'cv' }} name="Computer Vision" color="rgb(144, 172, 224)" />
 						<TrayItemWidget model={{ type: 'nlp' }} name="Natural Language Processing" color="rgb(122, 233, 189)" />
-						<TrayItemWidget model={{ type: 'face' }} name="Facial Recognition" color="rgb(172, 239, 129)" />
+						{/* <TrayItemWidget model={{ type: 'face' }} name="Facial Recognition" color="rgb(172, 239, 129)" /> */}
 					</TrayWidget>
 					<S.Main>
 						<S.Layer

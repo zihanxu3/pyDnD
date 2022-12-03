@@ -149,7 +149,7 @@ def getSentimentOfList(listDocs=[
     # positive_mined_opinions = []
     # mixed_mined_opinions = []
     # negative_mined_opinions = []
-    res = ''
+    res = '> Sentiment Analysis Results: \n'
 
     for document in doc_result:
         res += "Document Sentiment: {}".format(document.sentiment) + '\n'
@@ -195,7 +195,7 @@ def getSentimentOfFile(uid, fileName):
     # positive_mined_opinions = []
     # mixed_mined_opinions = []
     # negative_mined_opinions = []
-    res = ''
+    res = '> Sentiment Analysis Results: \n'
 
     for document in doc_result:
         res += "Document Sentiment: {}".format(document.sentiment) + '\n'
@@ -245,7 +245,7 @@ def getExtractiveSummarizationOfList(document = [
         ],
     )
 
-    res = ''
+    res = '> Summary Results: \n'
     document_results = poller.result()
     for result in document_results:
         extract_summary_result = result[0]  # first document, first result
@@ -269,7 +269,7 @@ def getExtractiveSummarizationOfFile(uid, fileName):
         ],
     )
 
-    res = ''
+    res = '> Summary Results: \n'
     document_results = poller.result()
     for result in document_results:
         extract_summary_result = result[0]  # first document, first result
@@ -284,7 +284,7 @@ def getExtractiveSummarizationOfFile(uid, fileName):
     return res
 
 def getKeyPhraseFromList(documents = ["Dr. Smith has a very modern medical office, and she has great staff."]):
-    res = ''
+    res = '> Key Phrase Results: \n'
     try:
         response = text_analytics_client.extract_key_phrases(documents = documents)[0]
 
@@ -300,7 +300,7 @@ def getKeyPhraseFromList(documents = ["Dr. Smith has a very modern medical offic
     return res
 
 def getKeyPhraseFromFile(uid, fileName):
-    res = ''
+    res = '> Key Phrase Results: \n'
     fileObj = fileClient.downloadFileWithName(uid, fileName)
     documents = [i for i in fileObj]
     try:
