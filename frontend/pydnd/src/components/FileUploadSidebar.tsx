@@ -29,6 +29,7 @@ namespace S {
 	`;
     export const TrayStack = styled.div`
 		text-align: center;
+        overflow-y: auto;
 	`;
 }
 
@@ -65,7 +66,7 @@ const FileUploadSidebarWidget = ({ uid, fileList, onUpload, onClose }) => {
                             }
                             formData.append('uid', uid);
                             // https://pydnd-azure-backend-xyz.azurewebsites.net/compile
-                            const rawResponse = await fetch('/upload', {
+                            const rawResponse = await fetch('https://pydnd-azure-backend-xyz.azurewebsites.net/upload', {
                                 method: 'POST',
                                 body: formData,
                             });

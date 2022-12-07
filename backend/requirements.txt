@@ -5,8 +5,7 @@ python-dotenv
 azure-storage-blob 
 azure-identity
 azure-cognitiveservices-vision-computervision
-opencv-python
 opencv-python-headless
 azure-ai-textanalytics==5.2.0b4
 azure-cognitiveservices-vision-face
-
+redis

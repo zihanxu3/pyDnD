@@ -101,7 +101,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 	}
 
 	getList = async () => {
-		let resp = await fetch('/listfiles', {
+		let resp = await fetch('https://pydnd-azure-backend-xyz.azurewebsites.net/listfiles', {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',
@@ -158,7 +158,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 							<Button variant="outlined" onClick={
 								async () => {
 									// https://pydnd-azure-backend-xyz.azurewebsites.net/compile
-									const rawResponse = await fetch('/compile', {
+									const rawResponse = await fetch('https://pydnd-azure-backend-xyz.azurewebsites.net/compile', {
 										method: 'POST',
 										headers: {
 											'Accept': 'application/json',

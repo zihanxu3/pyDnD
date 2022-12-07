@@ -35,7 +35,7 @@ const Form = ({ handleClose, setUser }) => {
         e.preventDefault();
         if (signIn) {
 
-            const response = await fetch('/signin', {
+            const response = await fetch('https://pydnd-azure-backend-xyz.azurewebsites.net/signin', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -67,7 +67,7 @@ const Form = ({ handleClose, setUser }) => {
 
         } else {
 
-            const response = await fetch('/signup', {
+            const response = await fetch('https://pydnd-azure-backend-xyz.azurewebsites.net/signup', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',

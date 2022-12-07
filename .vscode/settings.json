@@ -1,3 +1,5 @@
 {
-    "python.formatting.provider": "yapf"
+    "python.formatting.provider": "yapf",
+    "appService.defaultWebAppToDeploy": "/subscriptions/768704ac-bea4-4486-b717-7454f86345d6/AppServices/subscriptions/768704ac-bea4-4486-b717-7454f86345d6/resourceGroups/appsvc_linux_centralus_basic/providers/Microsoft.Web/sites/pydnd-azure-backend-XYZ",
+    "appService.deploySubpath": "backend"
 }
