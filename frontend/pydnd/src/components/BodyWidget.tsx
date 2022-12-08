@@ -13,7 +13,6 @@ import { OutputWidget } from './OutputWidget';
 import { ParameterNodeModel } from './customNodes/ParameterNodeModel';
 import ModalDialogWidget from './ModalDialogWidget';
 import FileUploadSidebarWidget from './FileUploadSidebar';
-import { FlashAuto, ThirtyFpsSelect } from '@mui/icons-material';
 import ModalImageTextWidget from './ModalImageTextWidget';
 
 export interface BodyWidgetProps {
