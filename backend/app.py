@@ -54,6 +54,13 @@ def fileUpload():
     # fileClient.testDownloadFiles(uid)
     return {1: 'successfully upload'}
 
+@app.route('/download', methods=['POST'])
+def fileDownload():
+    fileName, uid = request.get_json()['fileName'], request.get_json()['uid']
+    file = fileClient.downloadFileWithNameAsBytes(fileName, uid)
+    # fileClient.testDownloadFiles(uid)
+    return file
+
 @app.route('/listfiles', methods=['POST'])
 def listFiles():
     # file = request.files['file']

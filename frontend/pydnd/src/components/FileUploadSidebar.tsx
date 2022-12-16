@@ -10,6 +10,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import DownloadIcon from '@mui/icons-material/Download';
 import CodeEditorWindow from './CodeEditWidget';
 import { forEach } from 'lodash';
 
@@ -29,6 +30,7 @@ namespace S {
 	`;
     export const TrayStack = styled.div`
 		text-align: center;
+        max-height: 100vh;
         overflow-y: auto;
 	`;
 }
@@ -48,7 +50,30 @@ const FileUploadSidebarWidget = ({ uid, fileList, onUpload, onClose }) => {
                 <h3 style={{marginBottom: "20px"}}>My Files</h3>
                 {(fileList).map((v) => {
                     console.log(v);
-                    return <p style={{marginBottom: "20px"}}>{v}</p>;
+                    return <div style={{display: 'flex', flexDirection: 'row', textAlign: 'center', justifyContent: 'center', alignItems: 'center'}}>
+                        <p style={{marginBottom: "20px"}}>{v}</p>
+                        <IconButton aria-label="download" onClick={() => {
+							fetch('/download', {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    fileName: v,
+                                    uid: uid,
+                                }),
+                            })
+                            .then(response => {
+                                response.blob().then(blob => {
+                                    let url = window.URL.createObjectURL(blob);
+                                    let a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = v;
+                                    a.click();
+                                });
+                                //window.location.href = response.url;
+                            });
+						}}>
+							<DownloadIcon />
+						</IconButton>
+                        </div>;
                 })}
                 <h3 style={{marginTop: "50px", marginBottom: "20px"}}>Upload Files</h3>
                 <input ref={(ref) => {
