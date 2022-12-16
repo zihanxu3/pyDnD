@@ -6,7 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 namespace S {
 	export const Tray = styled.div`
 		min-width: 200px;
-        max-width: 85vw;
+        max-width: 100vw;
         height: 200px;
 		background: rgb(20, 20, 20);
 		flex-grow: 0;
@@ -29,7 +29,7 @@ export class OutputWidget extends React.Component<any, any> {
     }
 	render() {
 		return <S.Tray style={{display: this.props.consoleOpen === false ? 'none' : 'flex'}}>
-            <pre>
+            <pre style={{whiteSpace: 'pre-wrap'}}>
                 {this.props.textBody}
             </pre>
             <div style={{marginLeft: 'auto'}}>

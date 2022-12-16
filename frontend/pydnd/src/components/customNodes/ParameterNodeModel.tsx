@@ -25,6 +25,11 @@ export class ParameterNodeModel extends DefaultNodeModel {
 	// For cv nodes
 	cvFunction: string;
 
+	// For nlp nodes
+	nlpFunction: string;
+	
+	tagList: string[][];
+
 
     onDoubleClick: () => void;
 
@@ -39,6 +44,7 @@ export class ParameterNodeModel extends DefaultNodeModel {
 		this.mode = options.mode;
 		this.fileName = '';
 		this.cvFunction = '';
+		this.nlpFunction = '';
 	}
 
 	getNodeMode(): string {
@@ -71,6 +77,17 @@ export class ParameterNodeModel extends DefaultNodeModel {
 		return this.cvFunction;
 	}
 
+	getNLPFunction(): string {
+		return this.nlpFunction;
+	}
+
+	getTagList(): string[][] {
+		if (typeof this.tagList === 'undefined') { 
+			return [];
+		}
+		return this.tagList;
+	}
+
     setValueAndType(value: string, type: string): void {
         this.value = value;
 		this.type = type;
@@ -91,6 +108,15 @@ export class ParameterNodeModel extends DefaultNodeModel {
 	setCVFunction(cvFunction: string): void {
 		this.cvFunction = cvFunction;
 	}
+
+	setNLPFunction(nlpFunction: string): void {
+		this.nlpFunction = nlpFunction;
+	}
+
+	setTagList(tagList: string[][]): void {
+		this.tagList = tagList;
+	}
+
 
 	addAllInPorts() {
 		this.getInPorts().forEach(item => 
@@ -152,6 +178,16 @@ export class ParameterNodeModel extends DefaultNodeModel {
 				...super.serialize(),
 				cvFunction: this.cvFunction,
 			};
+		} else if (this.mode === 'nlp') {
+			return {
+				...super.serialize(),
+				nlpFunction: this.nlpFunction,
+			};
+		} else if (this.mode === 'customcv') {
+			return {
+				...super.serialize(),
+				tagList: this.tagList,
+			};
 		}	
 	}
 
@@ -166,6 +202,10 @@ export class ParameterNodeModel extends DefaultNodeModel {
 			this.functionBody = event.data.functionBody;
 		} else if (event.data.mode === 'cv') {
 			this.cvFunction = event.data.cvFunction;
+		} else if (event.data.mode === 'nlp') { 
+			this.nlpFunction = event.data.nlpFunction;
+		} else if (event.data.mode === 'customcv') { 
+			this.tagList = event.data.tagList;
 		}
 	}
 }

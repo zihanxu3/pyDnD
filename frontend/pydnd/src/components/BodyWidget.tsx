@@ -13,7 +13,7 @@ import { OutputWidget } from './OutputWidget';
 import { ParameterNodeModel } from './customNodes/ParameterNodeModel';
 import ModalDialogWidget from './ModalDialogWidget';
 import FileUploadSidebarWidget from './FileUploadSidebar';
-import { ThirtyFpsSelect } from '@mui/icons-material';
+import ModalImageTextWidget from './ModalImageTextWidget';
 
 export interface BodyWidgetProps {
 	app: Application;
@@ -67,25 +67,29 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			myDriveOpen: false,
 			user: null,
 			fileList: [],
+			imageData: {},
+			imageDialogOpen: false,
 		}
 
 		//3-A) create a default node
 		var node1 = new ParameterNodeModel({
 			mode: 'variable',
-			onDoubleClick: () => { 
-			this.setState({ nodeSelected: node1 });
-			this.forceUpdate();
-		}, name: 'Parameter', color: 'rgb(0,192,255)'});
+			onDoubleClick: () => {
+				this.setState({ nodeSelected: node1 });
+				this.forceUpdate();
+			}, name: 'Parameter', color: 'rgb(0,192,255)'
+		});
 		let port = node1.addOutPort('Out');
 		node1.setPosition(300, 300);
 
 		//3-B) create another default node
 		var node2 = new ParameterNodeModel({
 			mode: 'variable',
-			onDoubleClick: () => { 
-			this.setState({ nodeSelected: node2 });
-			this.forceUpdate();
-		}, name: 'Output', color: 'rgb(192,255,0)'});
+			onDoubleClick: () => {
+				this.setState({ nodeSelected: node2 });
+				this.forceUpdate();
+			}, name: 'Output', color: 'rgb(192,255,0)'
+		});
 		let port2 = node2.addInPort('In');
 		node2.setPosition(600, 300);
 
@@ -96,7 +100,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 	}
 
 	getList = async () => {
-		let resp = await fetch('/listfiles', {
+		let resp = await fetch('https://pydnd-azure-backend-xyz.azurewebsites.net/listfiles', {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',
@@ -122,6 +126,8 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			formOpen,
 			myDriveOpen,
 			user,
+			imageData,
+			imageDialogOpen,
 		} = this.state;
 
 		const doubleClickNode = (node) => {
@@ -133,11 +139,11 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			<S.Body>
 				<S.Header>
 					<div className="title">CS 5412 PyDnD Project</div>
-					<div style={{marginLeft: 'auto', display: 'flex', flexDirection: 'row'}}>
-						<div style={{marginRight: "10px"}} >
+					<div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'row' }}>
+						<div style={{ marginRight: "10px" }} >
 							<Button variant="outlined" onClick={async () => {
 								if (user === null) {
-									this.setState({formOpen: true});
+									this.setState({ formOpen: true });
 								} else {
 									this.setState({
 										myDriveOpen: true,
@@ -149,33 +155,41 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 						</div>
 						<div>
 							<Button variant="outlined" onClick={
-									async () => {
-										// https://pydnd-azure-backend-xyz.azurewebsites.net/compile
-										const rawResponse = await fetch('/compile', {
-											method: 'POST',
-											headers: {
-												'Accept': 'application/json',
-												'Content-Type': 'application/json'
-											},
-											// mode: 'cors',
-											body: JSON.stringify({
-												serialization: this.props.app.getDiagramEngine().getModel().serialize(),
-												uid: user !== null ? user['uid'] : '',
-											})
-										});
-										let jsonResponse;
-										try {
-											jsonResponse = await rawResponse.json();
-										} catch (e) {
-											console.log(e)
-										}
-										console.log(jsonResponse);
-										this.setState({
-											consoleOutput: jsonResponse,
-											consoleOpen: true,
-										});
+								async () => {
+									// https://pydnd-azure-backend-xyz.azurewebsites.net/compile
+									const rawResponse = await fetch('/compile', {
+										method: 'POST',
+										headers: {
+											'Accept': 'application/json',
+											'Content-Type': 'application/json'
+										},
+										// mode: 'cors',
+										body: JSON.stringify({
+											serialization: this.props.app.getDiagramEngine().getModel().serialize(),
+											uid: user !== null ? user['uid'] : '',
+										})
+									});
+									let jsonResponse;
+									try {
+										jsonResponse = await rawResponse.json();
+									} catch (e) {
+										console.log(e)
 									}
-								}>
+									console.log(jsonResponse);
+									this.setState({
+										consoleOutput: await jsonResponse['consoleOutput'],
+										consoleOpen: true,
+										imageData: await jsonResponse['data'],
+									}, () => {
+										if (Object.keys(this.state.imageData).length !== 0) {
+											this.setState({
+												imageDialogOpen: true,
+											})
+										}
+									});
+
+								}
+							}>
 								Run
 							</Button>
 						</div>
@@ -183,113 +197,159 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 				</S.Header>
 				<S.Content>
 					<TrayWidget>
-						<p style={{color: 'white'}}> Python Exec Blocks </p> 
-                        <TrayItemWidget model={{ type: 'param' }} name="Parameter" color="rgb(0,192,255)" />
+						<p style={{ color: 'white' }}> Python Exec Blocks </p>
+						<TrayItemWidget model={{ type: 'param' }} name="Parameter" color="rgb(0,192,255)" />
 						<TrayItemWidget model={{ type: 'output' }} name="Output" color="rgb(192,255,0)" />
 						<TrayItemWidget model={{ type: 'function' }} name="Function" color="rgb(192,0,255)" />
 						<TrayItemWidget model={{ type: 'return' }} name="Return" color="rgb(112,128,144)" />
 						<TrayItemWidget model={{ type: 'print' }} name="Print" color="rgb(224, 203, 81)" />
-						<p style={{color: 'white', marginTop: '30px'}}> Deep Learning Blocks </p> 
+						<p style={{ color: 'white', marginTop: '30px' }}> Deep Learning Blocks </p>
 						<TrayItemWidget model={{ type: 'cv' }} name="Computer Vision" color="rgb(144, 172, 224)" />
+						<TrayItemWidget model={{ type: 'nlp' }} name="Natural Language Processing" color="rgb(122, 233, 189)" />
+						{user === null ? <div></div> : <TrayItemWidget model={{ type: 'customcv' }} name="Custom CV" color="rgb(172, 239, 129)" />}
 					</TrayWidget>
 					<S.Main>
-					<S.Layer
-						onDrop={(event) => {
-							var data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
-							var nodesCount = _.keys(this.props.app.getDiagramEngine().getModel().getNodes()).length;
+						<S.Layer
+							onDrop={(event) => {
+								var data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
+								var nodesCount = _.keys(this.props.app.getDiagramEngine().getModel().getNodes()).length;
 
-							var node;
-							if (data.type === 'output') {
-								node = new ParameterNodeModel({
-									mode: 'output',
-									name: 'Output', 
-									color: 'rgb(192,255,0)',
-									onDoubleClick: () => { 
-										doubleClickNode(node);
-									} 
-								});
-								node.addInPort('In');
-							} else if (data.type === 'param') {
-								node = new ParameterNodeModel({
-									mode: 'variable',
-									name: 'Parameter', 
-									color: 'rgb(0,192,255)',
-									onDoubleClick: () => { 
-										doubleClickNode(node);
-									} 
-								});
-								node.addOutPort('Out');
-							} else if (data.type === 'function') {
-								node = new ParameterNodeModel({
-									mode: 'function',
-									name: 'Function', 
-									color: 'rgb(192,0,255)',
-									onDoubleClick: () => { 
-										doubleClickNode(node);
-									} 
-								});
-								node.addInPort('Exec In');
-								node.addOutPort('Exec Out')
-							} else if (data.type === 'return') {
-								node = new DefaultNodeModel({name: 'Return', color: 'rgb(112,128,144)'});
-								node.addInPort('Exec In');
-							} else if (data.type === 'print') {
-								node = new DefaultNodeModel({name: 'Print', color: 'rgb(224, 203, 81)'});
-								node.addInPort('Exec In');
-							} else if (data.type === 'cv') {
-								node = new ParameterNodeModel({
-									mode: 'cv',
-									name: 'Computer Vision', 
-									color: 'rgb(144, 172, 224)',
-									onDoubleClick: () => { 
-										doubleClickNode(node);
-									} });
-								node.addInPort('Exec In');
-								node.addInPort('Image');
-								node.addOutPort('Exec Out');
-								node.addOutPort('Output');
-							}
-							var point = this.props.app.getDiagramEngine().getRelativeMousePoint(event);
-							node.setPosition(point);
-							this.props.app.getDiagramEngine().getModel().addNode(node);
-							this.forceUpdate();
-						}}
-						onDragOver={(event) => {
-							event.preventDefault();
-						}}
-					>
-						<DemoCanvasWidget>
-							<CanvasWidget engine={this.props.app.getDiagramEngine()} />
-						</DemoCanvasWidget>
-					</S.Layer>
-					<OutputWidget consoleOpen={consoleOpen} textBody={consoleOutput} onClose={() => { 
-						this.setState({
-							consoleOpen: false,
-						})
-					}}/>
+								var node;
+								if (data.type === 'output') {
+									node = new ParameterNodeModel({
+										mode: 'output',
+										name: 'Output',
+										color: 'rgb(192,255,0)',
+										onDoubleClick: () => {
+											doubleClickNode(node);
+										}
+									});
+									node.addInPort('In');
+								} else if (data.type === 'param') {
+									node = new ParameterNodeModel({
+										mode: 'variable',
+										name: 'Parameter',
+										color: 'rgb(0,192,255)',
+										onDoubleClick: () => {
+											doubleClickNode(node);
+										}
+									});
+									node.addOutPort('Out');
+								} else if (data.type === 'function') {
+									node = new ParameterNodeModel({
+										mode: 'function',
+										name: 'Function',
+										color: 'rgb(192,0,255)',
+										onDoubleClick: () => {
+											doubleClickNode(node);
+										}
+									});
+									node.addInPort('Exec In');
+									node.addOutPort('Exec Out')
+								} else if (data.type === 'return') {
+									node = new DefaultNodeModel({ name: 'Return', color: 'rgb(112,128,144)' });
+									node.addInPort('Exec In');
+								} else if (data.type === 'print') {
+									node = new DefaultNodeModel({ name: 'Print', color: 'rgb(224, 203, 81)' });
+									node.addInPort('Exec In');
+								} else if (data.type === 'cv') {
+									node = new ParameterNodeModel({
+										mode: 'cv',
+										name: 'Computer Vision',
+										color: 'rgb(144, 172, 224)',
+										onDoubleClick: () => {
+											doubleClickNode(node);
+										}
+									});
+									node.addInPort('Exec In');
+									node.addInPort('Image');
+									node.addOutPort('Exec Out');
+									node.addOutPort('Output');
+								} else if (data.type === 'nlp') {
+									node = new ParameterNodeModel({
+										mode: 'nlp',
+										name: 'Natural Language Processing',
+										color: 'rgb(122, 233, 189)',
+										onDoubleClick: () => {
+											doubleClickNode(node);
+										}
+									});
+									node.addInPort('Exec In');
+									node.addInPort('Text');
+									node.addOutPort('Exec Out');
+									node.addOutPort('Output');
+								}
+								else if (data.type === 'customcv') {
+									node = new ParameterNodeModel({
+										mode: 'customcv',
+										name: 'Custom CV',
+										color: 'rgb(172, 239, 129)',
+										onDoubleClick: () => {
+											doubleClickNode(node);
+										}
+									});
+									node.addInPort('Exec In');
+									node.addInPort('Testing Image');
+									node.addOutPort('Exec Out');
+									node.addOutPort('Result Output');
+								}
+								var point = this.props.app.getDiagramEngine().getRelativeMousePoint(event);
+								node.setPosition(point);
+								this.props.app.getDiagramEngine().getModel().addNode(node);
+								this.forceUpdate();
+							}}
+							onDragOver={(event) => {
+								event.preventDefault();
+							}}
+						>
+							<DemoCanvasWidget>
+								<CanvasWidget engine={this.props.app.getDiagramEngine()} />
+							</DemoCanvasWidget>
+						</S.Layer>
+						<OutputWidget consoleOpen={consoleOpen} textBody={consoleOutput} onClose={() => {
+							this.setState({
+								consoleOpen: false,
+							})
+						}} />
 					</S.Main>
-					<SidebarWidget 
-						nodeSelected={nodeSelected} 
-						onClose={() => {this.setState({nodeSelected: null})}}
+					<SidebarWidget
+						nodeSelected={nodeSelected}
+						onClose={() => { this.setState({ nodeSelected: null }) }}
 						user={user}
-						fileList={this.state.fileList}/>
-					{myDriveOpen ? 
-					<FileUploadSidebarWidget 
-						uid={user === null ? '' : user['uid']}
-						fileList={this.state.fileList}
-						onUpload={this.getList}
-						onClose={() => {this.setState({myDriveOpen: false})}}/>
-					: <div></div>}
-					<ModalDialogWidget open={formOpen} handleClose={ () => {
-						this.setState({
-							formOpen: false,
-						})
-					}} setUser={(user) => {
-						this.setState({user: user}, async () => {
-							await this.getList();
-						});
-						console.log(user);
-					}}/>
+						fileList={this.state.fileList} />
+					{myDriveOpen ?
+						<FileUploadSidebarWidget
+							uid={user === null ? '' : user['uid']}
+							fileList={this.state.fileList}
+							onUpload={this.getList}
+							onClose={() => { this.setState({ myDriveOpen: false }) }} />
+						: <div></div>}
+					<ModalDialogWidget
+						open={formOpen}
+						handleClose={() => {
+							this.setState({
+								formOpen: false,
+							})
+						}}
+						setUser={(user) => {
+							this.setState({ user: user }, async () => {
+								await this.getList();
+							});
+							console.log(user);
+						}} />
+					{imageDialogOpen ?
+						<ModalImageTextWidget
+							open={imageDialogOpen}
+							handleClose={() => {
+								this.setState({
+									imageDialogOpen: false,
+								})
+							}}
+							imageData={imageData}
+						/>
+						:
+						<div></div>
+					}
 				</S.Content>
 			</S.Body>
 		);

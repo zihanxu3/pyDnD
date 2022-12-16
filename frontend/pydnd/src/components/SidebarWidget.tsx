@@ -6,11 +6,13 @@ import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
+import Box from '@mui/material/Box';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import CodeEditorWindow from './CodeEditWidget';
+import { List, ListItem } from '@mui/material';
 
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
@@ -40,7 +42,8 @@ namespace S {
 	`;
 }
 var types = ['value', 'list', 'dict', 'set'];
-var functionTypes = ['GetTags - from URL', 'GetDescription - from URL']
+var functionTypes = ['GetTags - from URL', 'GetDescription - from URL', 'GetText - from URL']
+var languageTypes = ['GetSentiment - from List', 'GetSummarization - from List', 'GetKeyPhrase - from List']
 
 export class SidebarWidget extends React.Component<any, any> {
 	constructor(props) {
@@ -54,10 +57,12 @@ export class SidebarWidget extends React.Component<any, any> {
 			functionBody: '',
 			open: false,
 			cvType: 0,
+			nlpType: 0,
+			customCVList: [],
 		}
 		console.log("constructed");
 	}
-	
+
 	componentDidUpdate(prevProps: Readonly<any>, prevState: Readonly<any>, snapshot?: any): void {
 		console.log('called');
 		if (prevProps.nodeSelected !== this.props.nodeSelected) {
@@ -67,11 +72,13 @@ export class SidebarWidget extends React.Component<any, any> {
 				functionInputs: this.props.nodeSelected === null ? '' : this.props.nodeSelected.getFuntionInputs(),
 				functionOutputs: this.props.nodeSelected === null ? '' : this.props.nodeSelected.getFuntionOutputs(),
 				functionBody: this.props.nodeSelected === null ? '' : this.props.nodeSelected.getFuntionBody(),
+				customCVList: this.props.nodeSelected === null ? [] : this.props.nodeSelected.getTagList(),
 				open: false,
 				cvType: this.props.nodeSelected === null || this.props.nodeSelected.getCVFunction() === '' ? 0 : functionTypes.indexOf(this.props.nodeSelected.getCVFunction()),
 			});
 			if (this.props.user !== null && types.length <= 4) types = [...types, 'file'];
-			if (this.props.user !== null && functionTypes.length <= 2) functionTypes = [...functionTypes, 'GetTags - from File', 'GetDescription - from File'];
+			if (this.props.user !== null && functionTypes.length <= 3) functionTypes = [...functionTypes, 'GetTags - from File', 'GetDescription - from File', 'GetText - from File'];
+			if (this.props.user !== null && languageTypes.length <= 3) languageTypes = [...languageTypes, 'GetSentiment - from File', 'GetSummarization - from File', 'GetKeyPhrase - from File'];
 		}
 	}
 	render() {
@@ -84,6 +91,8 @@ export class SidebarWidget extends React.Component<any, any> {
 			functionBody,
 			open,
 			cvType,
+			nlpType,
+			customCVList,
 		} = this.state;
 		let content;
 		if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'variable') {
@@ -112,27 +121,27 @@ export class SidebarWidget extends React.Component<any, any> {
 					</div>
 					{variableType === 4 ?
 						<div style={{ marginTop: 20 }}>
-						<FormControl>
-							<InputLabel>File</InputLabel>
-							<Select
-								value={fileIdx}
-								label="File"
-								onChange={
-									(event: SelectChangeEvent) => {
-										console.log(event.target.value);
-										this.setState({
-											fileIdx: event.target.value
-										});
+							<FormControl>
+								<InputLabel>File</InputLabel>
+								<Select
+									value={fileIdx}
+									label="File"
+									onChange={
+										(event: SelectChangeEvent) => {
+											console.log(event.target.value);
+											this.setState({
+												fileIdx: event.target.value
+											});
+										}
 									}
-								}
-							>
-								{
-									this.props.fileList.map((val, idx) => {
-										return <MenuItem key={idx} value={idx}>{val}</MenuItem>;
-									})
-								}
-							</Select>
-						</FormControl>
+								>
+									{
+										this.props.fileList.map((val, idx) => {
+											return <MenuItem key={idx} value={idx}>{val}</MenuItem>;
+										})
+									}
+								</Select>
+							</FormControl>
 						</div>
 						:
 						<div style={{ marginTop: 20 }}>
@@ -254,7 +263,7 @@ export class SidebarWidget extends React.Component<any, any> {
 					</Snackbar>
 				</div>
 		} else if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'output') {
-			<p></p>; 
+			<p></p>;
 		} else if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'cv') {
 			content =
 				<div>
@@ -282,6 +291,149 @@ export class SidebarWidget extends React.Component<any, any> {
 					<div style={{ marginTop: 20 }}>
 						<Button variant="outlined" onClick={() => {
 							this.props.nodeSelected.setCVFunction(functionTypes[cvType]);
+							this.setState({
+								open: true,
+							});
+						}}>Save</Button>
+					</div>
+					<Snackbar
+						open={open}
+						autoHideDuration={2000}
+						onClose={() => { this.setState({ open: false }) }}
+					>
+						<Alert
+							onClose={() => { this.setState({ open: false }) }}
+							severity="success"
+							sx={{ width: '100%' }}
+						>
+							Saved Successfully!
+						</Alert>
+					</Snackbar>
+				</div>;
+		} else if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'nlp') {
+			content =
+				<div>
+					<div>
+						<FormControl>
+							<InputLabel>NLP Function</InputLabel>
+							<Select
+								value={nlpType}
+								label="NLP Function"
+								onChange={
+									(event: SelectChangeEvent) => {
+										console.log(event.target.value);
+										this.setState({
+											nlpType: event.target.value
+										});
+									}
+								}
+							>
+								{languageTypes.map((val, idx) => {
+									return <MenuItem key={idx} value={idx}>{val}</MenuItem>;
+								})}
+							</Select>
+						</FormControl>
+					</div>
+					<div style={{ marginTop: 20 }}>
+						<Button variant="outlined" onClick={() => {
+							this.props.nodeSelected.setNLPFunction(languageTypes[nlpType]);
+							this.setState({
+								open: true,
+							});
+						}}>Save</Button>
+					</div>
+					<Snackbar
+						open={open}
+						autoHideDuration={2000}
+						onClose={() => { this.setState({ open: false }) }}
+					>
+						<Alert
+							onClose={() => { this.setState({ open: false }) }}
+							severity="success"
+							sx={{ width: '100%' }}
+						>
+							Saved Successfully!
+						</Alert>
+					</Snackbar>
+				</div>;
+		} else if (this.props.nodeSelected !== null && this.props.nodeSelected.getNodeMode() === 'customcv') {
+			content =
+				<div>
+					<div>
+						<p>Add your tags and range below: </p>
+						<Button variant="outlined" onClick={() => {
+							this.setState({
+								customCVList: [
+									...customCVList,
+									['tag1', 'from', 'to']
+								]
+							})
+						}}>Add Tag</Button>
+						<List>
+							{customCVList.map((val, idx) => {
+								return <ListItem>
+									<TextField
+										style={{width: '120px', marginRight: '5px'}}
+										label="TagName"
+										value={val[0]}
+										onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+											this.setState({
+												customCVList: [
+													...customCVList.slice(0, idx),
+													[event.target.value, val[1], val[2]],
+													...customCVList.slice(idx + 1),
+												]
+											});
+										}}
+										placeholder={`Put in your tag name here.`}
+									/>
+									<TextField
+										style={{width: '70px', marginRight: '5px'}}
+										label="From"
+										value={val[1]}
+										onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+											this.setState({
+												customCVList: [
+													...customCVList.slice(0, idx),
+													[val[0], event.target.value, val[2]],
+													...customCVList.slice(idx + 1),
+												]
+											});
+										}}
+										placeholder={`Put in your range start here.`}
+									/>
+									<TextField
+										style={{width: '70px', marginRight: '5px'}}
+										label="To"
+										value={val[2]}
+										onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+											this.setState({
+												customCVList: [
+													...customCVList.slice(0, idx),
+													[val[0],val[1], event.target.value],
+													...customCVList.slice(idx + 1),
+												]
+											});
+										}}
+										placeholder={`Put in your range end here.`}
+									/>
+									<IconButton aria-label="delete" onClick={() => {
+										this.setState({
+											customCVList: [
+												...customCVList.slice(0, idx),
+												...customCVList.slice(idx + 1),
+											]
+										})
+									}}>
+										<CloseIcon />
+									</IconButton>
+								</ListItem>
+							})}
+						</List>
+					</div>
+					<div style={{ marginTop: 20 }}>
+						<Button variant="outlined" onClick={() => {
+							this.props.nodeSelected.setTagList(this.state.customCVList);
 							this.setState({
 								open: true,
 							});

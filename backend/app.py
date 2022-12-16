@@ -34,24 +34,23 @@ def compile():
     serialization, uid = requestJson['serialization'], requestJson['uid']
     hashing = make_hash(serialization)
     if r.get(hashing) != None:
-        return jsonify(r.get(hashing).decode('utf-8')), 200
+        return jsonify({'consoleOutput': r.get(hashing).decode('utf-8'), 'data': {}, 'success': 1}), 200
     deserializer = Deserializer(serialization, uid)
-    masterOutput = deserializer.linkNodes()
+    masterOutput, data = deserializer.linkNodes()
     print(masterOutput)
+    # print(cognitiveClient.getTextOfImage('https://i.pinimg.com/originals/a8/1c/14/a81c14ce2a72f996fc473f09b126725f.jpg'))
     ret = masterOutput
-    # for i in masterOutput:
-    #     ret += '> ' + str(i) + '\n'
-    # print(cognitiveClient.getTagsOfImage('https://media.npr.org/assets/img/2021/11/10/white-tailed-deer-1-ac07593f0b38e66ffac9178fb0c787ca75baea3d-s1100-c50.jpg'))
-    # print(cognitiveClient.getTextDescriptionOfImage('https://media.npr.org/assets/img/2021/11/10/white-tailed-deer-1-ac07593f0b38e66ffac9178fb0c787ca75baea3d-s1100-c50.jpg'))
-    r.set(hashing, bytes(ret, 'utf-8'))
-    return jsonify(ret)
+    if not data:
+        r.set(hashing, bytes(ret, 'utf-8'))
+        return jsonify({'consoleOutput': ret, 'data': {}, 'success': 1})
+    return jsonify({'consoleOutput': ret, 'data': data, 'success': 1})
 
 @app.route('/upload', methods=['POST'])
 def fileUpload():
-    file = request.files['file']
-    # fileName = file.filename
+    files = request.files.getlist('file')
     uid = request.form['uid']
-    fileClient.uploadFile(file, uid)
+    for file in files:
+        fileClient.uploadFile(file, uid)
     # fileClient.testDownloadFiles(uid)
     return {1: 'successfully upload'}
 

@@ -11,6 +11,7 @@ import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import CodeEditorWindow from './CodeEditWidget';
+import { forEach } from 'lodash';
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
 	props,
@@ -28,6 +29,7 @@ namespace S {
 	`;
     export const TrayStack = styled.div`
 		text-align: center;
+        overflow-y: auto;
 	`;
 }
 
@@ -51,18 +53,20 @@ const FileUploadSidebarWidget = ({ uid, fileList, onUpload, onClose }) => {
                 <h3 style={{marginTop: "50px", marginBottom: "20px"}}>Upload Files</h3>
                 <input ref={(ref) => {
                     setFileInput(ref)
-                }} type="file" style={{marginBottom: "90px"}} />
+                }} type="file" multiple accept='.jpg, .jpeg, .txt' style={{marginBottom: "90px"}} />
                 <div>
                     <Button variant="outlined" onClick={async (e) => { 
                         console.log(fileInput);
                         if (fileInput !== null) {
                             e.preventDefault();
-                            // console.log(fileInput.files[0].name);
+                            console.log(fileInput.files);
                             const formData = new FormData();
-                            formData.append("file", fileInput.files[0]);
+                            for (var i = 0; i < fileInput.files.length; i++) {
+                                formData.append('file', fileInput.files[i]);
+                            }
                             formData.append('uid', uid);
                             // https://pydnd-azure-backend-xyz.azurewebsites.net/compile
-                            const rawResponse = await fetch('/upload', {
+                            const rawResponse = await fetch('https://pydnd-azure-backend-xyz.azurewebsites.net/upload', {
                                 method: 'POST',
                                 body: formData,
                             });
