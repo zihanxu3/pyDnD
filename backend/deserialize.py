@@ -12,6 +12,7 @@ class Deserializer:
         self.funcDict   = {}
         self.cvDict     = {}
         self.nlpDict    = {}
+        self.customDict = {}
         self.outputDict = {}
         self.linkDict   = {}
         self.entry      = {}
@@ -66,7 +67,14 @@ class Deserializer:
                     'name': v['name'], 
                     'ports': v['ports']
                 }
-        self.select = {'Function': self.funcDict, 'Return': self.exit, 'Computer Vision': self.cvDict, 'Natural Language Processing': self.nlpDict}
+            elif v['name'] == 'Custom CV':
+                self.customDict[k] = {
+                    'name': v['name'], 
+                    'tagList': v['tagList'],
+                    'ports': v['ports']
+                }
+        self.select = {'Function': self.funcDict, 'Return': self.exit, 'Computer Vision': self.cvDict, 'Natural Language Processing': self.nlpDict, 'Custom CV': self.customDict}
+
     def parseAllLinks(self):
         for k, v in self.links.items():
             self.linkDict[k] = {
@@ -79,6 +87,11 @@ class Deserializer:
     def linkNodes(self):
         self.parseAllLinks()
         self.parseAllNodes() 
+        # try:
+        #     self.parseAllLinks()
+        #     self.parseAllNodes() 
+        # except:
+        #     return '\nError Parsing Node/Link, please check node linking or value settings.', None
         masterOutput = ['>>> PRINT VALUES <<<: \n', '>>> RETURN VALUES <<<: \n']
         imageData = [None]
         nodes = [self.entry]
@@ -152,7 +165,6 @@ class Deserializer:
             functionType = node['nlpFunction']
             inputVal, outputVal = None, None
             outputLink = None
-            ['GetSentiment - from List', 'GetSummarization - from List', 'GetKeyPhrase - from List']
             for v in node['ports']:
                 if v['name'] == 'Text':
                     if functionType == 'GetSentiment - from List':
@@ -179,19 +191,48 @@ class Deserializer:
             masterOutput[1] += outputVal
             return            
 
+        def parseCustomCVNode(node):
+            tagList = node['tagList']
+            testingImage = ''
+            outputLink = None
+            for v in node['ports']:
+                if v['name'] == 'Testing Image':
+                    testingImage = self.inputDict[self.linkDict[v['links'][0]]['source']]['value']
+                elif v['name'] == 'Output':
+                    outputLink = v['links']
 
+            outputVal = cognitiveClient.trainCustomCV(self.uid, tagList, testingImage)
+            masterOutput[1] += outputVal
+            return   
         
         while nodes:
             front = nodes.pop(0)
             if (front['name'] == 'Function'):
                 # Now we are assuming that there are only one layer of input / outputs,
                 # But as we progress there could be multiple layers, ITERATION NEEDED
-                parseFunctionNode(front)
+                try:
+                    parseFunctionNode(front)
+                except:
+                    return '\nError parsing Function Node, please check function syntax or node values.', None
             elif (front['name'] == 'Computer Vision'):
-                parseCVNode(front)
+                try:
+                    parseCVNode(front)
+                except:
+                    return '\nError parsing CV Node, please check node values.', None
             elif (front['name'] == 'Natural Language Processing'):
-                parseNLPNode(front)
-            appendOutPortNodes(front)
+                try:
+                    parseNLPNode(front)
+                except:
+                    return '\nError parsing NLP Node, please check node values.', None
+            elif (front['name'] == 'Custom CV'):
+                try:
+                    parseCustomCVNode(front)
+                except:
+                    return '\nError parsing Custom CV Node, please check node values.', None
+            try:
+                appendOutPortNodes(front)
+            except:
+                return '\nError linking nodes, please check node links.', None
         return '\n'.join(masterOutput), imageData[0]
 
 

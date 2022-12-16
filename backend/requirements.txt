@@ -9,3 +9,4 @@ opencv-python-headless
 azure-ai-textanalytics==5.2.0b4
 azure-cognitiveservices-vision-face
 redis
+azure-cognitiveservices-vision-customvision

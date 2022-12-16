@@ -157,7 +157,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 							<Button variant="outlined" onClick={
 								async () => {
 									// https://pydnd-azure-backend-xyz.azurewebsites.net/compile
-									const rawResponse = await fetch('https://pydnd-azure-backend-xyz.azurewebsites.net/compile', {
+									const rawResponse = await fetch('/compile', {
 										method: 'POST',
 										headers: {
 											'Accept': 'application/json',
@@ -206,7 +206,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 						<p style={{ color: 'white', marginTop: '30px' }}> Deep Learning Blocks </p>
 						<TrayItemWidget model={{ type: 'cv' }} name="Computer Vision" color="rgb(144, 172, 224)" />
 						<TrayItemWidget model={{ type: 'nlp' }} name="Natural Language Processing" color="rgb(122, 233, 189)" />
-						{/* <TrayItemWidget model={{ type: 'face' }} name="Facial Recognition" color="rgb(172, 239, 129)" /> */}
+						{user === null ? <div></div> : <TrayItemWidget model={{ type: 'customcv' }} name="Custom CV" color="rgb(172, 239, 129)" />}
 					</TrayWidget>
 					<S.Main>
 						<S.Layer
@@ -279,19 +279,19 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 									node.addOutPort('Exec Out');
 									node.addOutPort('Output');
 								}
-								else if (data.type === 'face') {
+								else if (data.type === 'customcv') {
 									node = new ParameterNodeModel({
-										mode: 'face',
-										name: 'Facial Recognition',
+										mode: 'customcv',
+										name: 'Custom CV',
 										color: 'rgb(172, 239, 129)',
 										onDoubleClick: () => {
 											doubleClickNode(node);
 										}
 									});
 									node.addInPort('Exec In');
-									node.addInPort('Text');
+									node.addInPort('Testing Image');
 									node.addOutPort('Exec Out');
-									node.addOutPort('Output');
+									node.addOutPort('Result Output');
 								}
 								var point = this.props.app.getDiagramEngine().getRelativeMousePoint(event);
 								node.setPosition(point);

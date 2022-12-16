@@ -27,6 +27,8 @@ export class ParameterNodeModel extends DefaultNodeModel {
 
 	// For nlp nodes
 	nlpFunction: string;
+	
+	tagList: string[][];
 
 
     onDoubleClick: () => void;
@@ -79,6 +81,13 @@ export class ParameterNodeModel extends DefaultNodeModel {
 		return this.nlpFunction;
 	}
 
+	getTagList(): string[][] {
+		if (typeof this.tagList === 'undefined') { 
+			return [];
+		}
+		return this.tagList;
+	}
+
     setValueAndType(value: string, type: string): void {
         this.value = value;
 		this.type = type;
@@ -99,9 +108,15 @@ export class ParameterNodeModel extends DefaultNodeModel {
 	setCVFunction(cvFunction: string): void {
 		this.cvFunction = cvFunction;
 	}
+
 	setNLPFunction(nlpFunction: string): void {
 		this.nlpFunction = nlpFunction;
 	}
+
+	setTagList(tagList: string[][]): void {
+		this.tagList = tagList;
+	}
+
 
 	addAllInPorts() {
 		this.getInPorts().forEach(item => 
@@ -168,10 +183,10 @@ export class ParameterNodeModel extends DefaultNodeModel {
 				...super.serialize(),
 				nlpFunction: this.nlpFunction,
 			};
-		} else if (this.mode === 'face') {
+		} else if (this.mode === 'customcv') {
 			return {
 				...super.serialize(),
-				// cvFunction: this.cvFunction,
+				tagList: this.tagList,
 			};
 		}	
 	}
@@ -189,6 +204,8 @@ export class ParameterNodeModel extends DefaultNodeModel {
 			this.cvFunction = event.data.cvFunction;
 		} else if (event.data.mode === 'nlp') { 
 			this.nlpFunction = event.data.nlpFunction;
-		} else if (event.data.mode === 'face') { }
+		} else if (event.data.mode === 'customcv') { 
+			this.tagList = event.data.tagList;
+		}
 	}
 }

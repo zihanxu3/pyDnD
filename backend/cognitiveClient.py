@@ -7,7 +7,11 @@ from azure.cognitiveservices.vision.computervision.models import OperationStatus
 from azure.ai.textanalytics import (TextAnalyticsClient, ExtractSummaryAction)
 from azure.core.credentials import AzureKeyCredential
 from azure.cognitiveservices.vision.face import FaceClient
-from azure.cognitiveservices.vision.face.models import FaceAttributeType, HairColorType, TrainingStatusType, Person
+# from azure.cognitiveservices.vision.face.models import FaceAttributeType, HairColorType, TrainingStatusType, Person
+from azure.cognitiveservices.vision.customvision.training import CustomVisionTrainingClient
+from azure.cognitiveservices.vision.customvision.prediction import CustomVisionPredictionClient
+from azure.cognitiveservices.vision.customvision.training.models import ImageFileCreateBatch, ImageFileCreateEntry, Region
+from msrest.authentication import ApiKeyCredentials
 
 import time
 import fileClient
@@ -38,10 +42,15 @@ text_analytics_client = TextAnalyticsClient(
     credential=ta_credential
 )
 
-face_client = FaceClient(
-    endpoint=endpoint, 
-    credentials=credentials
-)
+# face_client = FaceClient(
+#     endpoint=endpoint, 
+#     credentials=credentials
+# )
+
+credentials = ApiKeyCredentials(in_headers={"Training-key": os.environ.get('CUSTOM_VISION_TRAINING_KEY')})
+trainer = CustomVisionTrainingClient(os.environ.get('CUSTOM_VISION_ENDPOINT'), credentials)
+prediction_credentials = ApiKeyCredentials(in_headers={"Prediction-key": os.environ.get('CUSTOM_VISION_PREDICTION_KEY')})
+predictor = CustomVisionPredictionClient(os.environ.get('CUSTOM_VISION_ENDPOINT'), prediction_credentials)
 
 
 # TEST: https://media.npr.org/assets/img/2021/11/10/white-tailed-deer-1-ac07593f0b38e66ffac9178fb0c787ca75baea3d-s1100-c50.jpg
@@ -316,6 +325,58 @@ def getKeyPhraseFromFile(uid, fileName):
         res += "Encountered exception. {}".format(err)
     
     return res
+
+def trainCustomCV(uid, tagsTrain, imagePredict):
+    project = trainer.create_project('Animals')
+    res = ''
+    tagsDict = {}
+    publish_iteration_name = "classifyModel"
+    image_list = []
+    # UPLOAD
+    for tagName, fr, to in tagsTrain:
+        t = trainer.create_tag(project.id, tagName)
+        tagsDict[tagName] = t
+        for imageNum in range(int(fr), int(to) + 1):
+            file_name = tagName + '_' + str(imageNum) + '.jpg'
+            fileObj = fileClient.downloadFileWithNameAsBytes(uid, file_name)
+            image_list.append(ImageFileCreateEntry(name=file_name, contents=fileObj.read(), tag_ids=[t.id]))
+        
+    upload_result = trainer.create_images_from_files(project.id, ImageFileCreateBatch(images=image_list))
+    if not upload_result.is_batch_successful:
+        res += "Image batch upload failed."
+        for image in upload_result.images:
+            res += "Image status: ", image.status
+        return res
+    print(res)
+    res += "Training..."
+    iteration = trainer.train_project(project.id)
+    while (iteration.status != "Completed"):
+        iteration = trainer.get_iteration(project.id, iteration.id)
+        print("Training status: " + iteration.status)
+        print("Waiting 10 seconds...")
+        time.sleep(10)
+    
+    # The iteration is now trained. Publish it to the project endpoint
+    trainer.publish_iteration(project.id, iteration.id, publish_iteration_name, os.environ.get('CUSTOM_VISION_PREDICTION_ID'))
+    res += "Done!"
+    
+    prediction_credentials = ApiKeyCredentials(in_headers={"Prediction-key": os.environ.get('CUSTOM_VISION_PREDICTION_KEY')})
+    predictor = CustomVisionPredictionClient(os.environ.get('CUSTOM_VISION_PREDICTION_ENDPOINT'), prediction_credentials)
+    # Then we can predict on the trained project
+    predictObj = fileClient.downloadFileWithNameAsBytes(uid, imagePredict)
+    results = predictor.classify_image(project.id, publish_iteration_name, predictObj.read())
+
+    print(res)
+    # Display the results.
+    for prediction in results.predictions:
+        res += "\t" + prediction.tag_name + ": {0:.2f}%".format(prediction.probability * 100)
+
+    print ("Unpublishing project...")
+    trainer.unpublish_iteration(project.id, iteration.id)
+
+    print ("Deleting project...")
+    trainer.delete_project (project.id)
+    return res 
 
 
 # def getFaceDetection(url='https://img.freepik.com/free-photo/portrait-white-man-isolated_53876-40306.jpg?w=2000'):

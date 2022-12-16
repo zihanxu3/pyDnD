@@ -32,6 +32,7 @@ def executeFunction(functionBody, functionArgs):
 
     reload(temp)
     sys.stdout = printStatms = ListStream()
+    sys.stderr = printStatms
     functionCall = getattr(temp, parseFunctionName())
     # print(inspect.getargspec(functionCall).args)
     res = [functionCall(*functionArgs)]
