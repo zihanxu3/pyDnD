@@ -1,10 +1,13 @@
 import unittest
 
 from dotenv import load_dotenv
-load_dotenv('../.env')
+
+from pathlib import Path
+
+load_dotenv(Path("../.env").resolve())
 
 import sys
-sys.path.append('../')
+sys.path.append(Path("../").resolve())
 from execute import executeFunction
 
 class TestExecute(unittest.TestCase):
