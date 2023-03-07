@@ -6,19 +6,25 @@ import pymongo
 from dotenv import load_dotenv
 load_dotenv('.env')
 
+
+"""
+    User LogIn / SignIn Module, calling MongoDB.
+    @author Zihan Xu
+"""
+
 DB_NAME = 'userdb'
 USER_COLLECTION = "users"
-
 client = pymongo.MongoClient(os.environ.get('COSMOS_CONNECTION_STRING'))
+db = client[DB_NAME]
 
 # Create database if it doesn't exist
-db = client[DB_NAME]
 if DB_NAME not in client.list_database_names():
     # Database with 400 RU throughput that can be shared across the DB's collections
     db.command({"customAction": "CreateDatabase", "offerThroughput": 400})
     print("Created db '{}' with shared throughput.\n".format(DB_NAME))
 else:
     print("Using database: '{}'.\n".format(DB_NAME)) 
+
 
 # Create collection if it doesn't exist
 collection = db[USER_COLLECTION]
@@ -43,6 +49,7 @@ if USER_COLLECTION not in db.list_collection_names():
 else:
     print("Using collection: '{}'.\n".format(USER_COLLECTION))
 
+# Create a user with `firstName`, `lastName`, `email`, `password`
 def createUser(firstName, lastName, email, password): 
     doc = collection.find_one({"email": email})
     if doc:
@@ -62,6 +69,8 @@ def createUser(firstName, lastName, email, password):
     doc = collection.find_one({"_id": result.upserted_id})
     return 0, {'uid': doc['uid'], 'firstName': doc['firstName'], 'lastName': doc['lastName'], 'email': doc['email']}
 
+
+# Create a user with `firstName`, `lastName`, `email`, `password`
 def authUser(email, password):
     doc = collection.find_one({"email": email, "password": str(hashlib.md5(password.encode('utf-8')).hexdigest())})
     if not doc:

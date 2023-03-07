@@ -24,6 +24,7 @@ const useStyles = makeStyles()((theme) => {
 
 const Form = ({ handleClose, setUser }) => {
     const { classes } = useStyles();
+
     // create state variables for each input
     const [signIn, setSignIn] = useState(false);
     const [error, setError] = useState('');
@@ -34,14 +35,13 @@ const Form = ({ handleClose, setUser }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (signIn) {
-
-            const response = await fetch('https://pydnd-azure-backend-xyz.azurewebsites.net/signin', {
+            const response = await fetch('https://pydnd-backend.azurewebsites.net/signin', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                // mode: 'cors',
+                mode: 'cors',
                 body: JSON.stringify({
                     email: email,
                     password: password,
@@ -60,20 +60,18 @@ const Form = ({ handleClose, setUser }) => {
                 return;
             }
             console.log(data);
-            // TODO: Set user 
             setError("");
             setUser(data['body']);
             console.log(email, password);
 
         } else {
-
-            const response = await fetch('https://pydnd-azure-backend-xyz.azurewebsites.net/signup', {
+            const response = await fetch('https://pydnd-backend.azurewebsites.net/signup', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                // mode: 'cors',
+                mode: 'cors',
                 body: JSON.stringify({
                     firstName: firstName,
                     lastName: lastName,
@@ -93,18 +91,16 @@ const Form = ({ handleClose, setUser }) => {
                 setError("This email has already registered.");
                 return;
             }
-            // TODO: Set user 
             setError("");
             setUser(data['body']);
             console.log(email, password);
-
         }
         handleClose();
     };
 
     return (
         <form className={classes.root} onSubmit={handleSubmit}>
-            <p style={{color: 'red'}}>{error}</p>
+            <p style={{ color: 'red' }}>{error}</p>
             {signIn ? <div></div> :
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <TextField

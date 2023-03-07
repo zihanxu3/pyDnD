@@ -2,7 +2,17 @@ import ast
 from execute import executeFunction
 import fileClient
 import cognitiveClient
+
+
+"""
+    Deserializer for canvas.
+    @author Zihan Xu
+"""
+
+
+# Class to deserialize and reorganize json data from frontend.
 class Deserializer:
+
     def __init__(self, jsonString, uid):
         self.jsonString = jsonString
         self.uid        = uid
@@ -19,7 +29,7 @@ class Deserializer:
         self.exit       = {}
         self.select     = {}
         self.print      = {}
-        # print(self.nodes)
+
     def parseAllNodes(self):
         for k, v in self.nodes.items():
             if v['name'] == 'Parameter':
@@ -85,16 +95,20 @@ class Deserializer:
             }
 
     def linkNodes(self):
-        self.parseAllLinks()
-        self.parseAllNodes() 
-        # try:
-        #     self.parseAllLinks()
-        #     self.parseAllNodes() 
-        # except:
-        #     return '\nError Parsing Node/Link, please check node linking or value settings.', None
+        # self.parseAllLinks()
+        # self.parseAllNodes() 
+        try:
+            self.parseAllLinks()
+            self.parseAllNodes() 
+        except:
+            return '\nError Parsing Node/Link, please check node linking or value settings.', None
+        
+        # Pretty printing
         masterOutput = ['>>> PRINT VALUES <<<: \n', '>>> RETURN VALUES <<<: \n']
         imageData = [None]
         nodes = [self.entry]
+
+        # Append nodes connecting to the outgoing ports of node
         def appendOutPortNodes(node): 
             for v in node['ports']:
                 if v['label'] == 'Exec Out':
@@ -102,9 +116,9 @@ class Deserializer:
                         targetNodeID = self.linkDict[link]['target']
                         nodes.append(self.select[self.nodes[targetNodeID]['name']][targetNodeID])
                     break
+
+        # Parse a `Function` node and exec the function as necessary.
         def parseFunctionNode(node):
-            # funtionInputsTypes = node['functionInputs']
-            # funtionOutputTypes = node['functionOutputs']
             funtionBody = node['functionBody']
             inputVals = []
             outputLinks = []
@@ -128,8 +142,8 @@ class Deserializer:
             masterOutput[0] += prints
             for i in outputs: 
                 masterOutput[1] += '> ' + str(i) + '\n'
-            # masterOutput.extend(outputs)
         
+        # Parse a `CV` node and call Azure microservices as necessary.
         def parseCVNode(node):
             functionType = node['cvFunction']
             inputVal, outputVal = None, None

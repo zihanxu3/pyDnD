@@ -93,20 +93,20 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 		let port2 = node2.addInPort('In');
 		node2.setPosition(600, 300);
 
-
 		// link the ports
 		let link1 = port.link(port2);
 		this.props.app.getDiagramEngine().getModel().addAll(node1, node2, link1);
 	}
 
+	// Get user's uploaded file names
 	getList = async () => {
-		let resp = await fetch('https://pydnd-azure-backend-xyz.azurewebsites.net/listfiles', {
+		let resp = await fetch('https://pydnd-backend.azurewebsites.net/listfiles', {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',
 				'Content-Type': 'application/json'
 			},
-			// mode: 'cors',
+			mode: 'cors',
 			body: JSON.stringify({
 				uid: this.state.user['uid'],
 			})
@@ -117,6 +117,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 			fileList: respJson,
 		});
 	}
+	
 	render() {
 		console.log(this.props.app.getDiagramEngine().getModel().serialize());
 		const {
@@ -138,7 +139,7 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 		return (
 			<S.Body>
 				<S.Header>
-					<div className="title">CS 5412 PyDnD Project</div>
+					<div className="title">Cornell GTRS PyDnD Project</div>
 					<div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'row' }}>
 						<div style={{ marginRight: "10px" }} >
 							<Button variant="outlined" onClick={async () => {
@@ -157,13 +158,13 @@ export class BodyWidget extends React.Component<BodyWidgetProps, any> {
 							<Button variant="outlined" onClick={
 								async () => {
 									// https://pydnd-azure-backend-xyz.azurewebsites.net/compile
-									const rawResponse = await fetch('/compile', {
+									const rawResponse = await fetch('https://pydnd-backend.azurewebsites.net/compile', {
 										method: 'POST',
 										headers: {
 											'Accept': 'application/json',
 											'Content-Type': 'application/json'
 										},
-										// mode: 'cors',
+										mode: 'cors',
 										body: JSON.stringify({
 											serialization: this.props.app.getDiagramEngine().getModel().serialize(),
 											uid: user !== null ? user['uid'] : '',

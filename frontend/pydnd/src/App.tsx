@@ -2,11 +2,10 @@ import * as SRD from '@projectstorm/react-diagrams';
 import { ParameterNodeFactory } from './components/customNodes/ParameterNodeFactory';
 // import { ParameterNodeModel } from './components/customNodes/ParameterNodeModel';
 
-/**
- * @author Dylan Vorster
- * Rivised by 
+/** 
  * @author Zihan Xu
  */
+
 export class Application {
 	protected activeModel: SRD.DiagramModel;
 	protected diagramEngine: SRD.DiagramEngine;

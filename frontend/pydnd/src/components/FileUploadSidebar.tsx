@@ -53,7 +53,7 @@ const FileUploadSidebarWidget = ({ uid, fileList, onUpload, onClose }) => {
                     return <div style={{display: 'flex', flexDirection: 'row', textAlign: 'center', justifyContent: 'center', alignItems: 'center'}}>
                         <p style={{marginBottom: "20px"}}>{v}</p>
                         <IconButton aria-label="download" onClick={() => {
-							fetch('/download', {
+							fetch('https://pydnd-backend.azurewebsites.net/download', {
                                 method: 'POST',
                                 body: JSON.stringify({
                                     fileName: v,
@@ -68,7 +68,6 @@ const FileUploadSidebarWidget = ({ uid, fileList, onUpload, onClose }) => {
                                     a.download = v;
                                     a.click();
                                 });
-                                //window.location.href = response.url;
                             });
 						}}>
 							<DownloadIcon />
@@ -90,8 +89,7 @@ const FileUploadSidebarWidget = ({ uid, fileList, onUpload, onClose }) => {
                                 formData.append('file', fileInput.files[i]);
                             }
                             formData.append('uid', uid);
-                            // https://pydnd-azure-backend-xyz.azurewebsites.net/compile
-                            const rawResponse = await fetch('https://pydnd-azure-backend-xyz.azurewebsites.net/upload', {
+                            const rawResponse = await fetch('https://pydnd-backend.azurewebsites.net/upload', {
                                 method: 'POST',
                                 body: formData,
                             });

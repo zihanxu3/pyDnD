@@ -4,7 +4,7 @@ import Form from './Form';
 
 const ModalImageTextWidget = ({ open, handleClose, imageData }) => {
   return (
-    // props received from App.js
+    // props received from Body.tsx
     <Dialog open={open} onClose={handleClose}>
         <div style={{margin: '50px', justifyContent: 'center', textAlign: 'center'}}>
             <img style={{maxWidth: '200px', height: 'auto'}} src={`data:image/jpeg;base64, ${imageData['image']}`}/>

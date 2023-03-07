@@ -4,7 +4,7 @@ import Form from './Form';
 
 const ModalDialogWidget = ({ open, handleClose, setUser }) => {
   return (
-    // props received from App.js
+    // props received from Body.tsx
     <Dialog open={open} onClose={handleClose}>
       <Form handleClose={handleClose} setUser={setUser}/>
     </Dialog>

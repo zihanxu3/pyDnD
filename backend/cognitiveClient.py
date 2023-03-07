@@ -24,6 +24,12 @@ load_dotenv('.env')
 import os
 
 
+"""
+    Client for handling request and routing to Azure Cognitive Services.
+    @author Zihan Xu
+"""
+
+
 endpoint = os.environ.get('COGNITIVE_SERVICE_ENDPOINT')
 key = os.environ.get('COGNITIVE_SERVICE_KEY')
 LOCAL_PATH = './data'
@@ -41,11 +47,6 @@ text_analytics_client = TextAnalyticsClient(
     endpoint=endpoint, 
     credential=ta_credential
 )
-
-# face_client = FaceClient(
-#     endpoint=endpoint, 
-#     credentials=credentials
-# )
 
 credentials = ApiKeyCredentials(in_headers={"Training-key": os.environ.get('CUSTOM_VISION_TRAINING_KEY')})
 trainer = CustomVisionTrainingClient(os.environ.get('CUSTOM_VISION_ENDPOINT'), credentials)
@@ -139,9 +140,6 @@ def annotateImage(fileName, boundingBoxes):
         end_point =(int(i[4]),int(i[5]))
         cv2.rectangle(imageRectangle, start_point, end_point, (0, 0, 255), thickness=3, lineType=cv2.LINE_8) 
 
-    # path = os.path.join(LOCAL_PATH, 'ANNOTATE' + fileName)
-    # cv2.imwrite(path, imageRectangle)
-    # imageBytes = open(path, mode='rb')
     imageBytes = cv2.imencode('.jpg', imageRectangle)[1].tobytes()
     data = base64.b64encode(imageBytes).decode()   
     return data
@@ -152,12 +150,6 @@ def getSentimentOfList(listDocs=[
     result = text_analytics_client.analyze_sentiment(listDocs, show_opinion_mining=True)
     doc_result = [doc for doc in result if not doc.is_error]
 
-    # positive_reviews = [doc for doc in doc_result if doc.sentiment == "positive"]
-    # negative_reviews = [doc for doc in doc_result if doc.sentiment == "negative"]
-
-    # positive_mined_opinions = []
-    # mixed_mined_opinions = []
-    # negative_mined_opinions = []
     res = '> Sentiment Analysis Results: \n'
 
     for document in doc_result:
@@ -198,12 +190,6 @@ def getSentimentOfFile(uid, fileName):
     result = text_analytics_client.analyze_sentiment(listDocs, show_opinion_mining=True)
     doc_result = [doc for doc in result if not doc.is_error]
 
-    # positive_reviews = [doc for doc in doc_result if doc.sentiment == "positive"]
-    # negative_reviews = [doc for doc in doc_result if doc.sentiment == "negative"]
-
-    # positive_mined_opinions = []
-    # mixed_mined_opinions = []
-    # negative_mined_opinions = []
     res = '> Sentiment Analysis Results: \n'
 
     for document in doc_result:
@@ -377,61 +363,6 @@ def trainCustomCV(uid, tagsTrain, imagePredict):
     print ("Deleting project...")
     trainer.delete_project (project.id)
     return res 
-
-
-# def getFaceDetection(url='https://img.freepik.com/free-photo/portrait-white-man-isolated_53876-40306.jpg?w=2000'):
-
-#     def get_accessories(accessories):
-#         accessory_str = ",".join([str(accessory) for accessory in accessories])
-#         return accessory_str if accessory_str else "No accessories"
-   
-    
-#     detected_faces = face_client.face.detect_with_url(
-#         url=url,
-#         return_face_attributes=[
-#             FaceAttributeType.accessories,
-#             'age',
-#             'blur',
-#             'exposure',
-#             'glasses',
-#             'headPose',
-#             'noise',
-#             'occlusion',
-#         ]
-#     )
-
-#     # if not detected_faces:
-#     #     raise Exception(
-#     #         "No face detected")
-#     # print("{} faces detected from image".format(
-#     #     len(detected_faces)))
-#     # if not detected_faces[0].face_attributes:
-#     #     raise Exception(
-#     #         "Parameter return_face_attributes of detect_with_stream_async must be set to get face attributes.")
-
-#     # for face in detected_faces:
-#     #     print("Face attributes  Rectangle(Left/Top/Width/Height) : {} {} {} {}".format(
-#     #         face.face_rectangle.left,
-#     #         face.face_rectangle.top,
-#     #         face.face_rectangle.width,
-#     #         face.face_rectangle.height)
-#     #     )
-#     #     print("Face attributes - Accessories : {}".format(get_accessories(face.face_attributes.accessories)))
-#     #     print("Face attributes - Age : {}".format(face.face_attributes.age))
-#     #     print("Face attributes - Blur : {}".format(face.face_attributes.blur.blur_level))
-#     #     print("Face attributes - Exposure : {}".format(face.face_attributes.exposure.exposure_level))
-#     #     print("Face attributes - Glasses : {}".format(face.face_attributes.glasses))
-#     #     print("Face attributes - HeadPose : Pitch: {}, Roll: {}, Yaw: {}".format(
-#     #         round(face.face_attributes.head_pose.pitch, 2),
-#     #         round(face.face_attributes.head_pose.roll, 2),
-#     #         round(face.face_attributes.head_pose.yaw, 2))
-#     #     )
-#     #     print("Face attributes of - Noise : {}".format(face.face_attributes.noise.noise_level))
-#     #     print("Face attributes of - Occlusion : EyeOccluded: {},   ForeheadOccluded: {},   MouthOccluded: {}".format(
-#     #         "Yes" if face.face_attributes.occlusion.eye_occluded else "No",
-#     #         "Yes" if face.face_attributes.occlusion.forehead_occluded else "No",
-#     #         "Yes" if face.face_attributes.occlusion.mouth_occluded else "No")
-#     #     )
 
 
 
