@@ -10,13 +10,8 @@ load_dotenv('.env')
     @author Zihan Xu
 """
 
-AZURE_STORAGE_CONNECTION_STRING = os.environ.get(
-    'AZURE_STORAGE_CONNECTION_STRING'
-)
-
-blob_service_client = BlobServiceClient.from_connection_string(
-    AZURE_STORAGE_CONNECTION_STRING
-)
+AZURE_STORAGE_CONNECTION_STRING = os.environ.get('AZURE_STORAGE_CONNECTION_STRING')
+blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
 
 # Upload a `file` to user's blob corresp to `uid`.
 def uploadFile(file, uid):

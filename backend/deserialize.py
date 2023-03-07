@@ -95,13 +95,8 @@ class Deserializer:
             }
 
     def linkNodes(self):
-        # self.parseAllLinks()
-        # self.parseAllNodes() 
-        try:
-            self.parseAllLinks()
-            self.parseAllNodes() 
-        except:
-            return '\nError Parsing Node/Link, please check node linking or value settings.', None
+        self.parseAllLinks()
+        self.parseAllNodes() 
         
         # Pretty printing
         masterOutput = ['>>> PRINT VALUES <<<: \n', '>>> RETURN VALUES <<<: \n']
