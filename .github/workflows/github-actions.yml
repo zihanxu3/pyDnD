@@ -1,6 +1,6 @@
 name: CI For PyDnD
 
-on: [ main ]
+on: [ push ]
 
 jobs:
   build:
